@@ -107,7 +107,7 @@ namespace {{GeneratedNamespace}}
             cw.AppendLine($"readonly partial struct {identifier} :");
 
             // interfaces
-            cw.AppendLine($"\tglobal::{AugmentedNamespace}.{ValueObjectInterfaceName}<{identifier}, {typeIdentifier}>,");
+            cw.AppendLine($"\tglobal::{AugmentedNamespace}.{ValueObjectInterfaceName}<{typeIdentifier}>,");
             cw.AppendLine($"\tglobal::System.IEquatable<{identifier}>,");
             cw.AppendLine($"\tglobal::System.IEquatable<{typeIdentifier}>");
 
@@ -152,7 +152,7 @@ namespace {{GeneratedNamespace}}
             cw.AppendLine($"public {valueObjectTypeName}()");
             using (cw.AddBlock())
             {
-                cw.AppendLine("Value = DefaultValue().Value;");
+                cw.AppendLine("Value = DefaultValue.Value;");
             }
         }
         else

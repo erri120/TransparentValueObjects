@@ -1,6 +1,8 @@
 namespace TransparentValueObjects.Augments;
 
-public interface IHasDefaultValue<out TSelf>
+public interface IHasDefaultValue<out TValueObject, TValue>
+    where TValueObject : IValueObject<TValue>
+    where TValue : notnull
 {
-    static abstract TSelf DefaultValue();
+    public static abstract TValueObject DefaultValue { get; }
 }

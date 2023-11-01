@@ -15,7 +15,7 @@ public class ValueObjectIncrementalSourceGeneratorTests
 namespace TestNamespace;
 
 [TransparentValueObjects.Generated.ValueObject<string>]
-public readonly partial struct SampleValueObject : TransparentValueObjects.Augments.IHasDefaultValue<SampleValueObject>
+public readonly partial struct SampleValueObject : TransparentValueObjects.Augments.IHasDefaultValue<SampleValueObject, string>
 {
     public static SampleValueObject GetDefaultValue() => From("Hello World!");
 }
@@ -29,7 +29,7 @@ namespace TestNamespace;
 
 [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage(Justification = "Auto-generated.")]
 readonly partial struct SampleValueObject :
-    global::TransparentValueObjects.Augments.IValueObject<SampleValueObject, global::System.String>,
+    global::TransparentValueObjects.Augments.IValueObject<global::System.String>,
 	global::System.IEquatable<SampleValueObject>,
 	global::System.IEquatable<global::System.String>
 {
@@ -37,7 +37,7 @@ readonly partial struct SampleValueObject :
 
     public SampleValueObject()
     {
-        Value = DefaultValue().Value;
+        Value = DefaultValue.Value;
     }
 
 	private SampleValueObject(global::System.String value)
@@ -129,7 +129,7 @@ public {{valueObjectTypeName}}()
 $$"""
 public {{valueObjectTypeName}}()
 {
-    Value = DefaultValue().Value;
+    Value = DefaultValue.Value;
 }
 """;
 
