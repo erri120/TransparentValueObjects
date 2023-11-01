@@ -19,6 +19,7 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
     private const string ValueObjectInterfaceName = "IValueObject";
     private const string HasDefaultValueInterfaceName = "IHasDefaultValue";
     private const string HasDefaultEqualityComparerInterfaceName = "IHasDefaultEqualityComparer";
+    private const string HasRandomIdInterfaceName = "IHasRandomId";
 
     private const string AttributeSourceCode =
 $$"""
@@ -158,6 +159,15 @@ namespace {{GeneratedNamespace}}
 
                 if (innerValueTypeName == "global::System.Guid")
                     AddGuidSpecificCode(cw, valueObjectTypeName, innerValueTypeName);
+
+                // Equals methods from interfaces and base object
+                if (GetAugment(valueObjectInterfaces, HasRandomIdInterfaceName) is { } randomIdAugmentTypeSymbol)
+                {
+                    var randomType = randomIdAugmentTypeSymbol.TypeArguments[2];
+                    var randomTypeName = $"global::{randomType.ContainingNamespace.ToDisplayString()}.{randomType.Name}";
+                    var isUnamanged = innerValueTypeSymbol.IsUnmanagedType;
+                    AddRandomIdMethod(cw, valueObjectTypeName, innerValueTypeName, randomTypeName, isUnamanged);
+                }
             }
 
             context.AddSource($"{valueObjectTypeName}.g.cs", SourceText.From(cw.ToString(), Encoding.UTF8));
@@ -176,6 +186,11 @@ namespace {{GeneratedNamespace}}
                            namedSymbol.TypeArguments.Length == 1 &&
                            namedSymbol.TypeArguments[0].Name == innerValueTypeSymbol.Name
         );
+    }
+
+    private static INamedTypeSymbol? GetAugment(ImmutableArray<INamedTypeSymbol> existingInterfaces, string augmentName)
+    {
+        return existingInterfaces.FirstOrDefault(x => x.Name == augmentName && x.ContainingNamespace.ToDisplayString() == AugmentedNamespace);
     }
 
     private static bool HasAugment(ImmutableArray<INamedTypeSymbol> existingInterfaces, string augmentName)
@@ -344,6 +359,27 @@ namespace {{GeneratedNamespace}}
     {
         cw.AppendLine($"public static {valueObjectTypeName} NewId() => From({innerValueTypeName}.NewGuid());");
         cw.AppendLine();
+    }
+
+    public static void AddRandomIdMethod(
+        CodeWriter cw,
+        string valueObjectTypeName,
+        string innerValueTypeName,
+        string randomTypeName,
+        bool isInnerValueUnamanged)
+    {
+        if (!isInnerValueUnamanged) return;
+
+        cw.AppendLine($"public static {valueObjectTypeName} NewRandomId()");
+        using (cw.AddBlock())
+        {
+            cw.AppendLine($"var size = global::System.Runtime.CompilerServices.Unsafe.SizeOf<{innerValueTypeName}>();");
+            cw.AppendLine($"var random = new {randomTypeName}();");
+            cw.AppendLine("global::System.Span<byte> bytes = stackalloc byte[size];");
+            cw.AppendLine("random.NextBytes(bytes);");
+            cw.AppendLine($"var id = global::System.Runtime.InteropServices.MemoryMarshal.Cast<byte, {innerValueTypeName}>(bytes)[0];");
+            cw.AppendLine($"return {valueObjectTypeName}.From(id);");
+        }
     }
 
     private readonly struct Target : IEquatable<Target>

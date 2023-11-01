@@ -18,6 +18,7 @@ namespace TestNamespace;
 public readonly partial struct SampleValueObject :
     TransparentValueObjects.Augments.IHasDefaultValue<SampleValueObject, string>
     TransparentValueObjects.Augments.IHasDefaultEqualityComparer<SampleValueObject, string>
+    TransparentValueObjects.Augments.IHasDefaultEqualityComparer<SampleValueObject, string>
 {
     public static SampleValueObject GetDefaultValue() => From("Hello World!");
     public static IEqualityComparer<string> InnerValueDefaultEqualityComparer => StringComparer.OrdinalIgnoreCase;
