@@ -15,16 +15,17 @@ public class CodeWriter : ICodeBlock
         return this;
     }
 
-    public CodeWriter Append(string text)
+    public CodeWriter Append(string text, bool inLine = true)
     {
-        _stringBuilder.Append(new string('\t', _depth));
+        // TODO: fix this, only add tabs at the beginning
+        if (!inLine) _stringBuilder.Append(new string('\t', _depth));
         _stringBuilder.Append(text);
         return this;
     }
 
     public CodeWriter AppendLine(string line)
     {
-        return Append(line).AppendLine();
+        return Append(line, inLine: false).AppendLine();
     }
 
     public CodeWriter AppendLine()

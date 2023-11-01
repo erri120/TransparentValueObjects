@@ -94,7 +94,8 @@ namespace {{GeneratedNamespace}}
             var innerValueTypeName = $"global::{innerValueNamedTypeSymbol.ContainingNamespace.ToDisplayString()}.{innerValueNamedTypeSymbol.Name}";
             var innerValueTypeNullableAnnotation = innerValueNamedTypeSymbol.IsReferenceType ? "?" : "";
 
-            var existingInterfaces = valueObjectNamedTypeSymbol.Interfaces;
+            var innerValueInterfaces = innerValueNamedTypeSymbol.Interfaces;
+            var valueObjectInterfaces = valueObjectNamedTypeSymbol.Interfaces;
 
             var cw = new CodeWriter();
 
@@ -113,7 +114,12 @@ namespace {{GeneratedNamespace}}
             cw.AppendLine($"\tglobal::System.IEquatable<{valueObjectTypeName}>,");
             cw.Append($"\tglobal::System.IEquatable<{innerValueTypeName}>");
 
-
+            var comparableInterfaceTypeSymbol = GetInterfaceWithInnerTypeArgument(innerValueInterfaces, innerValueTypeSymbol, typeof(IComparable<>));
+            if (comparableInterfaceTypeSymbol is not null)
+            {
+                cw.AppendLine(",");
+                cw.Append($"\tglobal::System.IComparable<{valueObjectTypeName}>");
+            }
 
             cw.AppendLine();
 
@@ -124,7 +130,7 @@ namespace {{GeneratedNamespace}}
                 cw.AppendLine();
 
                 // public default constructor
-                var hasDefaultValue = HasAugment(existingInterfaces, HasDefaultValueInterfaceName);
+                var hasDefaultValue = HasAugment(valueObjectInterfaces, HasDefaultValueInterfaceName);
                 AddPublicConstructor(cw, valueObjectTypeName, hasDefaultValue);
 
                 // private constructor with value
@@ -138,7 +144,7 @@ namespace {{GeneratedNamespace}}
                 OverrideBaseMethods(cw);
 
                 // Equals methods from interfaces and base object
-                var hasDefaultEqualityComparer = HasAugment(existingInterfaces, HasDefaultEqualityComparerInterfaceName);
+                var hasDefaultEqualityComparer = HasAugment(valueObjectInterfaces, HasDefaultEqualityComparerInterfaceName);
                 ImplementEqualsMethods(cw, valueObjectTypeName, innerValueTypeName, innerValueTypeNullableAnnotation, hasDefaultEqualityComparer);
 
                 // equality operators
@@ -147,12 +153,29 @@ namespace {{GeneratedNamespace}}
                 // explicit cast operators
                 AddExplicitCastOperators(cw, valueObjectTypeName, innerValueTypeName);
 
+                if (comparableInterfaceTypeSymbol is not null)
+                    ForwardInterface(cw, valueObjectTypeName, comparableInterfaceTypeSymbol);
+
                 if (innerValueTypeName == "global::System.Guid")
                     AddGuidSpecificCode(cw, valueObjectTypeName, innerValueTypeName);
             }
 
             context.AddSource($"{valueObjectTypeName}.g.cs", SourceText.From(cw.ToString(), Encoding.UTF8));
         }
+    }
+
+    private static INamedTypeSymbol? GetInterfaceWithInnerTypeArgument(
+        ImmutableArray<INamedTypeSymbol> interfaces,
+        ISymbol innerValueTypeSymbol,
+        Type interfaceType)
+    {
+        var typeNameWithoutType = interfaceType.Name.Substring(0, interfaceType.Name.IndexOf('`'));
+        return interfaces.FirstOrDefault(
+            namedSymbol => namedSymbol.ContainingNamespace.Name == interfaceType.Namespace &&
+                           namedSymbol.Name == typeNameWithoutType &&
+                           namedSymbol.TypeArguments.Length == 1 &&
+                           namedSymbol.TypeArguments[0].Name == innerValueTypeSymbol.Name
+        );
     }
 
     private static bool HasAugment(ImmutableArray<INamedTypeSymbol> existingInterfaces, string augmentName)
@@ -262,6 +285,56 @@ namespace {{GeneratedNamespace}}
         cw.AppendLine($"public static explicit operator {valueObjectTypeName}({innerValueTypeName} value) => From(value);");
         cw.AppendLine($"public static explicit operator {innerValueTypeName}({valueObjectTypeName} value) => value.Value;");
         cw.AppendLine();
+    }
+
+    private static void ForwardInterface(
+        CodeWriter cw,
+        string valueObjectTypeName,
+        INamedTypeSymbol interfaceNamedTypeSymbol)
+    {
+        foreach (var memberSymbol in interfaceNamedTypeSymbol.GetMembers())
+        {
+            if (memberSymbol is not IMethodSymbol methodSymbol) continue;
+            var originalSymbol = methodSymbol.OriginalDefinition;
+
+            cw.Append("public ");
+            cw.Append(originalSymbol.ReturnsVoid ? "void " : $"{TypeSymbolToString(originalSymbol.ReturnType)} ");
+            cw.Append(originalSymbol.Name);
+
+            cw.Append("(");
+
+            var first = true;
+            foreach (var parameterSymbol in originalSymbol.Parameters)
+            {
+                if (!first) cw.Append(", ");
+                first = false;
+
+                cw.Append($"{TypeSymbolToString(parameterSymbol.Type)} ");
+                cw.Append(parameterSymbol.Name);
+            }
+
+            cw.Append($") => Value.{originalSymbol.Name}(");
+
+            first = true;
+            foreach (var parameterSymbol in originalSymbol.Parameters)
+            {
+                if (!first) cw.Append(", ");
+                first = false;
+
+                cw.Append(parameterSymbol.Name);
+            }
+
+            cw.Append(");");
+            cw.AppendLine();
+        }
+
+        return;
+        string TypeSymbolToString(ITypeSymbol typeSymbol)
+        {
+            return typeSymbol.TypeKind == TypeKind.TypeParameter
+                ? valueObjectTypeName
+                : $"global::{typeSymbol.ContainingNamespace.ToDisplayString()}.{typeSymbol.Name}";
+        }
     }
 
     public static void AddGuidSpecificCode(
