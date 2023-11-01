@@ -18,6 +18,7 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
     private const string AugmentedNamespace = "TransparentValueObjects.Augments";
     private const string ValueObjectInterfaceName = "IValueObject";
     private const string HasDefaultValueInterfaceName = "IHasDefaultValue";
+    private const string HasDefaultEqualityComparerInterfaceName = "IHasDefaultEqualityComparer";
 
     private const string AttributeSourceCode =
 $$"""
@@ -85,13 +86,13 @@ namespace {{GeneratedNamespace}}
             if (symbol is not INamedTypeSymbol namedTypeSymbol) continue;
 
             var namespaceName = namedTypeSymbol.ContainingNamespace.ToDisplayString();
-            var identifier = namedTypeSymbol.Name;
+            var valueObjectTypeName = namedTypeSymbol.Name;
 
             var underlyingType = attributeData.AttributeClass?.TypeArguments.FirstOrDefault();
             if (underlyingType is not INamedTypeSymbol underlyingNamedType) continue;
 
-            var typeIdentifier = $"global::{underlyingNamedType.ContainingNamespace.ToDisplayString()}.{underlyingNamedType.Name}";
-            var typeNullableAnnotation = underlyingNamedType.IsReferenceType ? "?" : "";
+            var innerValueTypeName = $"global::{underlyingNamedType.ContainingNamespace.ToDisplayString()}.{underlyingNamedType.Name}";
+            var innerValueTypeNullableAnnotation = underlyingNamedType.IsReferenceType ? "?" : "";
 
             var existingInterfaces = namedTypeSymbol.Interfaces;
 
@@ -104,45 +105,51 @@ namespace {{GeneratedNamespace}}
             cw.AppendLine();
 
             cw.AppendLine("[global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage(Justification = \"Auto-generated.\")]");
-            cw.AppendLine($"readonly partial struct {identifier} :");
+            cw.AppendLine($"readonly partial struct {valueObjectTypeName} :");
 
             // interfaces
-            cw.AppendLine($"\tglobal::{AugmentedNamespace}.{ValueObjectInterfaceName}<{typeIdentifier}>,");
-            cw.AppendLine($"\tglobal::System.IEquatable<{identifier}>,");
-            cw.AppendLine($"\tglobal::System.IEquatable<{typeIdentifier}>");
+            cw.AppendLine($"\tglobal::{AugmentedNamespace}.{ValueObjectInterfaceName}<{innerValueTypeName}>,");
+            cw.AppendLine($"\tglobal::System.IEquatable<{valueObjectTypeName}>,");
+            cw.AppendLine($"\tglobal::System.IEquatable<{innerValueTypeName}>");
 
             using (cw.AddBlock())
             {
                 // backing field
-                cw.AppendLine($"public readonly {typeIdentifier} Value;");
+                cw.AppendLine($"public readonly {innerValueTypeName} Value;");
                 cw.AppendLine();
 
                 // public default constructor
-                var hasDefaultValue = existingInterfaces.Any(x => x.Name == HasDefaultValueInterfaceName && x.ContainingNamespace.ToDisplayString() == AugmentedNamespace);
-                AddPublicConstructor(cw, identifier, hasDefaultValue);
+                var hasDefaultValue = HasAugment(existingInterfaces, HasDefaultValueInterfaceName);
+                AddPublicConstructor(cw, valueObjectTypeName, hasDefaultValue);
 
                 // private constructor with value
-                AddPrivateConstructor(cw, identifier, typeIdentifier);
+                AddPrivateConstructor(cw, valueObjectTypeName, innerValueTypeName);
 
                 // public From method
-                cw.AppendLine($"public static {identifier} From({typeIdentifier} value) => new(value);");
+                cw.AppendLine($"public static {valueObjectTypeName} From({innerValueTypeName} value) => new(value);");
                 cw.AppendLine();
 
                 // ToString and GetHashCode
                 OverrideBaseMethods(cw);
 
                 // Equals methods from interfaces and base object
-                ImplementEqualsMethods(cw, identifier, typeIdentifier, typeNullableAnnotation);
+                var hasDefaultEqualityComparer = HasAugment(existingInterfaces, HasDefaultEqualityComparerInterfaceName);
+                ImplementEqualsMethods(cw, valueObjectTypeName, innerValueTypeName, innerValueTypeNullableAnnotation, hasDefaultEqualityComparer);
 
                 // equality operators
-                AddEqualityOperators(cw, identifier, typeIdentifier);
+                AddEqualityOperators(cw, valueObjectTypeName, innerValueTypeName);
 
                 // explicit cast operators
-                AddExplicitCastOperators(cw, identifier, typeIdentifier);
+                AddExplicitCastOperators(cw, valueObjectTypeName, innerValueTypeName);
             }
 
-            context.AddSource($"{identifier}.g.cs", SourceText.From(cw.ToString(), Encoding.UTF8));
+            context.AddSource($"{valueObjectTypeName}.g.cs", SourceText.From(cw.ToString(), Encoding.UTF8));
         }
+    }
+
+    private static bool HasAugment(ImmutableArray<INamedTypeSymbol> existingInterfaces, string augmentName)
+    {
+        return existingInterfaces.Any(x => x.Name == augmentName && x.ContainingNamespace.ToDisplayString() == AugmentedNamespace);
     }
 
     public static void AddPublicConstructor(CodeWriter cw, string valueObjectTypeName, bool hasDefaultValue)
@@ -191,13 +198,21 @@ namespace {{GeneratedNamespace}}
         CodeWriter cw,
         string valueObjectTypeName,
         string innerValueTypeName,
-        string innerValueTypeNullableAnnotation)
+        string innerValueTypeNullableAnnotation,
+        bool hasDefaultEqualityComparer)
     {
         // IEquality<Self>
-        cw.AppendLine($"public bool Equals({valueObjectTypeName} other) => Value.Equals(other.Value);");
+        cw.AppendLine($"public bool Equals({valueObjectTypeName} other) => Equals(other.Value);");
 
         // IEquality<Value>
-        cw.AppendLine($"public bool Equals({innerValueTypeName}{innerValueTypeNullableAnnotation} other) => Value.Equals(other);");
+        if (hasDefaultEqualityComparer)
+        {
+            cw.AppendLine($"public bool Equals({innerValueTypeName}{innerValueTypeNullableAnnotation} other) => InnerValueDefaultEqualityComparer.Equals(Value, other);");
+        }
+        else
+        {
+            cw.AppendLine($"public bool Equals({innerValueTypeName}{innerValueTypeNullableAnnotation} other) => Value.Equals(other);");
+        }
 
         // with equality comparer
         cw.AppendLine($"public bool Equals({valueObjectTypeName} other, global::System.Collections.Generic.IEqualityComparer<{innerValueTypeName}> comparer) => comparer.Equals(Value, other.Value);");

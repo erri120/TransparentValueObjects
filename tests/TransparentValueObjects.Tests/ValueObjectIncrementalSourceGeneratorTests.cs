@@ -15,9 +15,12 @@ public class ValueObjectIncrementalSourceGeneratorTests
 namespace TestNamespace;
 
 [TransparentValueObjects.Generated.ValueObject<string>]
-public readonly partial struct SampleValueObject : TransparentValueObjects.Augments.IHasDefaultValue<SampleValueObject, string>
+public readonly partial struct SampleValueObject :
+    TransparentValueObjects.Augments.IHasDefaultValue<SampleValueObject, string>
+    TransparentValueObjects.Augments.IHasDefaultEqualityComparer<SampleValueObject, string>
 {
     public static SampleValueObject GetDefaultValue() => From("Hello World!");
+    public static IEqualityComparer<string> InnerValueDefaultEqualityComparer => StringComparer.OrdinalIgnoreCase;
 }
 """;
 
@@ -51,8 +54,8 @@ readonly partial struct SampleValueObject :
 
 	public override string ToString() => Value.ToString();
 
-	public bool Equals(SampleValueObject other) => Value.Equals(other.Value);
-	public bool Equals(global::System.String? other) => Value.Equals(other);
+	public bool Equals(SampleValueObject other) => Equals(other.Value);
+	public bool Equals(global::System.String? other) => InnerValueDefaultEqualityComparer.Equals(Value, other);
 	public bool Equals(SampleValueObject other, global::System.Collections.Generic.IEqualityComparer<global::System.String> comparer) => comparer.Equals(Value, other.Value);
 	public override bool Equals(object? obj)
 	{
@@ -176,13 +179,13 @@ public override string ToString() => Value.ToString();
     }
 
     [Fact]
-    public void Test_ImplementEqualsMethods()
+    public void Test_ImplementEqualsMethods_WithoutDefaultEqualityComparer()
     {
         const string valueObjectTypeName = "MyValueObject";
         const string innerValueTypeName = "string";
         const string output =
 $$"""
-public bool Equals({{valueObjectTypeName}} other) => Value.Equals(other.Value);
+public bool Equals({{valueObjectTypeName}} other) => Equals(other.Value);
 public bool Equals({{innerValueTypeName}}? other) => Value.Equals(other);
 public bool Equals({{valueObjectTypeName}} other, global::System.Collections.Generic.IEqualityComparer<{{innerValueTypeName}}> comparer) => comparer.Equals(Value, other.Value);
 public override bool Equals(object? obj)
@@ -195,7 +198,32 @@ public override bool Equals(object? obj)
 """;
 
         var cw = new CodeWriter();
-        ValueObjectIncrementalSourceGenerator.ImplementEqualsMethods(cw, valueObjectTypeName, innerValueTypeName, "?");
+        ValueObjectIncrementalSourceGenerator.ImplementEqualsMethods(cw, valueObjectTypeName, innerValueTypeName, "?", hasDefaultEqualityComparer: false);
+
+        NormalizeEquals(cw.ToString(), output);
+    }
+
+    [Fact]
+    public void Test_ImplementEqualsMethods_WithDefaultEqualityComparer()
+    {
+        const string valueObjectTypeName = "MyValueObject";
+        const string innerValueTypeName = "string";
+        const string output =
+$$"""
+public bool Equals({{valueObjectTypeName}} other) => Equals(other.Value);
+public bool Equals({{innerValueTypeName}}? other) => InnerValueDefaultEqualityComparer.Equals(Value, other);
+public bool Equals({{valueObjectTypeName}} other, global::System.Collections.Generic.IEqualityComparer<{{innerValueTypeName}}> comparer) => comparer.Equals(Value, other.Value);
+public override bool Equals(object? obj)
+{
+	if (obj is null) return false;
+	if (obj is {{valueObjectTypeName}} value) return Equals(value);
+	if (obj is {{innerValueTypeName}} innerValue) return Equals(innerValue);
+	return false;
+}
+""";
+
+        var cw = new CodeWriter();
+        ValueObjectIncrementalSourceGenerator.ImplementEqualsMethods(cw, valueObjectTypeName, innerValueTypeName, "?", hasDefaultEqualityComparer: true);
 
         NormalizeEquals(cw.ToString(), output);
     }

@@ -11,6 +11,5 @@ public readonly partial struct SampleValueObject :
     IHasDefaultEqualityComparer<SampleValueObject, string>
 {
     public static SampleValueObject DefaultValue => From("Hello World!");
-    public static IEqualityComparer<SampleValueObject> DefaultEqualityComparer => EqualityComparer<SampleValueObject>.Default;
     public static IEqualityComparer<string> InnerValueDefaultEqualityComparer => StringComparer.OrdinalIgnoreCase;
 }
