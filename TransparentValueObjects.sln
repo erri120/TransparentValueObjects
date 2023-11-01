@@ -1,0 +1,46 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".solutionItems", ".solutionItems", "{5170A618-81B0-4404-9037-B2A39DBDB10D}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{D7366524-42DB-4204-807A-80E28FF3BE8E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{08302C8D-3533-4967-A69D-90A971618F90}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransparentValueObjects", "src\TransparentValueObjects\TransparentValueObjects.csproj", "{B333D4DF-0147-4162-B33A-821B1D16746D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransparentValueObjects.Sample", "src\TransparentValueObjects.Sample\TransparentValueObjects.Sample.csproj", "{B0587ECB-BC82-4BE2-B1E3-632E0CB16354}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransparentValueObjects.Tests", "tests\TransparentValueObjects.Tests\TransparentValueObjects.Tests.csproj", "{2084CEAE-BACC-4FA4-9F76-D1A4098C9A5E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B333D4DF-0147-4162-B33A-821B1D16746D} = {D7366524-42DB-4204-807A-80E28FF3BE8E}
+		{B0587ECB-BC82-4BE2-B1E3-632E0CB16354} = {D7366524-42DB-4204-807A-80E28FF3BE8E}
+		{2084CEAE-BACC-4FA4-9F76-D1A4098C9A5E} = {08302C8D-3533-4967-A69D-90A971618F90}
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B333D4DF-0147-4162-B33A-821B1D16746D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B333D4DF-0147-4162-B33A-821B1D16746D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B333D4DF-0147-4162-B33A-821B1D16746D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B333D4DF-0147-4162-B33A-821B1D16746D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0587ECB-BC82-4BE2-B1E3-632E0CB16354}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0587ECB-BC82-4BE2-B1E3-632E0CB16354}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0587ECB-BC82-4BE2-B1E3-632E0CB16354}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0587ECB-BC82-4BE2-B1E3-632E0CB16354}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2084CEAE-BACC-4FA4-9F76-D1A4098C9A5E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2084CEAE-BACC-4FA4-9F76-D1A4098C9A5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2084CEAE-BACC-4FA4-9F76-D1A4098C9A5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2084CEAE-BACC-4FA4-9F76-D1A4098C9A5E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
