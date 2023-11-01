@@ -161,7 +161,7 @@ namespace {{GeneratedNamespace}}
                     AddGuidSpecificCode(cw, valueObjectTypeName, innerValueTypeName);
 
                 // The NewRandomValue
-                if (GetAugment(valueObjectInterfaces, HasRandomValueInterfaceName) is { } randomIdAugmentTypeSymbol)
+                if (GetAugment(valueObjectInterfaces, HasRandomValueInterfaceName) is { TypeArguments.Length: 3 } randomIdAugmentTypeSymbol)
                 {
                     var randomType = randomIdAugmentTypeSymbol.TypeArguments[2];
                     var randomTypeName = $"global::{randomType.ContainingNamespace.ToDisplayString()}.{randomType.Name}";
