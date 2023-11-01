@@ -77,24 +77,24 @@ namespace {{GeneratedNamespace}}
     {
         foreach (var target in targets)
         {
-            var syntax = target.Syntax;
+            var valueObjectDeclarationSyntax = target.Syntax;
             var attributeData = target.AttributeData;
 
-            var semanticModel = compilation.GetSemanticModel(syntax.SyntaxTree);
-            var symbol = semanticModel.GetDeclaredSymbol(syntax);
+            var semanticModel = compilation.GetSemanticModel(valueObjectDeclarationSyntax.SyntaxTree);
+            var valueObjectTypeSymbol = semanticModel.GetDeclaredSymbol(valueObjectDeclarationSyntax);
 
-            if (symbol is not INamedTypeSymbol namedTypeSymbol) continue;
+            if (valueObjectTypeSymbol is not INamedTypeSymbol valueObjectNamedTypeSymbol) continue;
 
-            var namespaceName = namedTypeSymbol.ContainingNamespace.ToDisplayString();
-            var valueObjectTypeName = namedTypeSymbol.Name;
+            var namespaceName = valueObjectNamedTypeSymbol.ContainingNamespace.ToDisplayString();
+            var valueObjectTypeName = valueObjectNamedTypeSymbol.Name;
 
-            var underlyingType = attributeData.AttributeClass?.TypeArguments.FirstOrDefault();
-            if (underlyingType is not INamedTypeSymbol underlyingNamedType) continue;
+            var innerValueTypeSymbol = attributeData.AttributeClass?.TypeArguments.FirstOrDefault();
+            if (innerValueTypeSymbol is not INamedTypeSymbol innerValueNamedTypeSymbol) continue;
 
-            var innerValueTypeName = $"global::{underlyingNamedType.ContainingNamespace.ToDisplayString()}.{underlyingNamedType.Name}";
-            var innerValueTypeNullableAnnotation = underlyingNamedType.IsReferenceType ? "?" : "";
+            var innerValueTypeName = $"global::{innerValueNamedTypeSymbol.ContainingNamespace.ToDisplayString()}.{innerValueNamedTypeSymbol.Name}";
+            var innerValueTypeNullableAnnotation = innerValueNamedTypeSymbol.IsReferenceType ? "?" : "";
 
-            var existingInterfaces = namedTypeSymbol.Interfaces;
+            var existingInterfaces = valueObjectNamedTypeSymbol.Interfaces;
 
             var cw = new CodeWriter();
 
@@ -111,7 +111,11 @@ namespace {{GeneratedNamespace}}
             // interfaces
             cw.AppendLine($"\tglobal::{AugmentedNamespace}.{ValueObjectInterfaceName}<{innerValueTypeName}>,");
             cw.AppendLine($"\tglobal::System.IEquatable<{valueObjectTypeName}>,");
-            cw.AppendLine($"\tglobal::System.IEquatable<{innerValueTypeName}>");
+            cw.Append($"\tglobal::System.IEquatable<{innerValueTypeName}>");
+
+
+
+            cw.AppendLine();
 
             using (cw.AddBlock())
             {

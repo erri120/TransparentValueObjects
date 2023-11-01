@@ -15,11 +15,16 @@ public class CodeWriter : ICodeBlock
         return this;
     }
 
-    public CodeWriter AppendLine(string line)
+    public CodeWriter Append(string text)
     {
         _stringBuilder.Append(new string('\t', _depth));
-        _stringBuilder.AppendLine(line);
+        _stringBuilder.Append(text);
         return this;
+    }
+
+    public CodeWriter AppendLine(string line)
+    {
+        return Append(line).AppendLine();
     }
 
     public CodeWriter AppendLine()
