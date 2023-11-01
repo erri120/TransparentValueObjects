@@ -24,6 +24,11 @@ namespace TestNamespace;
 readonly partial struct SampleValueObject
 {
     public readonly global::System.String Value;
+    [global::System.Obsolete($"Use SampleValueObject.{nameof(From)} instead.", error: true)]
+    public SampleValueObject()
+    {
+        throw new global::System.InvalidOperationException($"Use SampleValueObject.{nameof(From)} instead.");
+    }
     private SampleValueObject(global::System.String value)
     {
         Value = value;
