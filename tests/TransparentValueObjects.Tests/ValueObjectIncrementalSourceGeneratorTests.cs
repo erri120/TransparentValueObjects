@@ -268,6 +268,22 @@ public static explicit operator {{innerValueTypeName}}({{valueObjectTypeName}} v
         NormalizeEquals(cw.ToString(), output);
     }
 
+    [Fact]
+    public void Test_AddGuidSpecificCode()
+    {
+        const string valueObjectTypeName = "MyId";
+        const string innerValueTypeName = "Guid";
+        const string output =
+$$"""
+public static {{valueObjectTypeName}} NewId() => From(Guid.NewGuid());
+""";
+
+        var cw = new CodeWriter();
+        ValueObjectIncrementalSourceGenerator.AddGuidSpecificCode(cw, valueObjectTypeName, innerValueTypeName);
+
+        NormalizeEquals(cw.ToString(), output);
+    }
+
     private static string Normalize(string input)
     {
         var sb = new StringBuilder(input);

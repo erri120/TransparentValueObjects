@@ -141,6 +141,9 @@ namespace {{GeneratedNamespace}}
 
                 // explicit cast operators
                 AddExplicitCastOperators(cw, valueObjectTypeName, innerValueTypeName);
+
+                if (innerValueTypeName == "global::System.Guid")
+                    AddGuidSpecificCode(cw, valueObjectTypeName, innerValueTypeName);
             }
 
             context.AddSource($"{valueObjectTypeName}.g.cs", SourceText.From(cw.ToString(), Encoding.UTF8));
@@ -253,6 +256,15 @@ namespace {{GeneratedNamespace}}
     {
         cw.AppendLine($"public static explicit operator {valueObjectTypeName}({innerValueTypeName} value) => From(value);");
         cw.AppendLine($"public static explicit operator {innerValueTypeName}({valueObjectTypeName} value) => value.Value;");
+        cw.AppendLine();
+    }
+
+    public static void AddGuidSpecificCode(
+        CodeWriter cw,
+        string valueObjectTypeName,
+        string innerValueTypeName)
+    {
+        cw.AppendLine($"public static {valueObjectTypeName} NewId() => From({innerValueTypeName}.NewGuid());");
         cw.AppendLine();
     }
 
