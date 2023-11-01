@@ -19,7 +19,7 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
     private const string ValueObjectInterfaceName = "IValueObject";
     private const string HasDefaultValueInterfaceName = "IHasDefaultValue";
     private const string HasDefaultEqualityComparerInterfaceName = "IHasDefaultEqualityComparer";
-    private const string HasRandomIdInterfaceName = "IHasRandomId";
+    private const string HasRandomValueInterfaceName = "IHasRandomValue";
 
     private const string AttributeSourceCode =
 $$"""
@@ -160,13 +160,13 @@ namespace {{GeneratedNamespace}}
                 if (innerValueTypeName == "global::System.Guid")
                     AddGuidSpecificCode(cw, valueObjectTypeName, innerValueTypeName);
 
-                // Equals methods from interfaces and base object
-                if (GetAugment(valueObjectInterfaces, HasRandomIdInterfaceName) is { } randomIdAugmentTypeSymbol)
+                // The NewRandomValue
+                if (GetAugment(valueObjectInterfaces, HasRandomValueInterfaceName) is { } randomIdAugmentTypeSymbol)
                 {
                     var randomType = randomIdAugmentTypeSymbol.TypeArguments[2];
                     var randomTypeName = $"global::{randomType.ContainingNamespace.ToDisplayString()}.{randomType.Name}";
                     var isUnamanged = innerValueTypeSymbol.IsUnmanagedType;
-                    AddRandomIdMethod(cw, valueObjectTypeName, innerValueTypeName, randomTypeName, isUnamanged);
+                    AddRandomValueMethod(cw, valueObjectTypeName, innerValueTypeName, randomTypeName, isUnamanged);
                 }
             }
 
@@ -361,7 +361,7 @@ namespace {{GeneratedNamespace}}
         cw.AppendLine();
     }
 
-    public static void AddRandomIdMethod(
+    public static void AddRandomValueMethod(
         CodeWriter cw,
         string valueObjectTypeName,
         string innerValueTypeName,
@@ -370,7 +370,7 @@ namespace {{GeneratedNamespace}}
     {
         if (!isInnerValueUnamanged) return;
 
-        cw.AppendLine($"public static {valueObjectTypeName} NewRandomId()");
+        cw.AppendLine($"public static {valueObjectTypeName} NewRandomValue()");
         using (cw.AddBlock())
         {
             cw.AppendLine($"var size = global::System.Runtime.CompilerServices.Unsafe.SizeOf<{innerValueTypeName}>();");

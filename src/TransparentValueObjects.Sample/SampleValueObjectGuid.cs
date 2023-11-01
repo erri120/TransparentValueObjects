@@ -9,7 +9,7 @@ namespace TransparentValueObjects.Sample;
 public readonly partial struct SampleValueObjectGuid :
     IHasDefaultValue<SampleValueObjectGuid, Guid>,
     IHasDefaultEqualityComparer<SampleValueObjectGuid, Guid>,
-    IHasRandomId<SampleValueObjectGuid, Guid, Random>
+    IHasRandomValue<SampleValueObjectGuid, Guid, Random>
 {
     public static SampleValueObjectGuid DefaultValue => From(Guid.Empty);
     public static IEqualityComparer<Guid> InnerValueDefaultEqualityComparer => EqualityComparer<Guid>.Default;
