@@ -19,7 +19,8 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
     private const string ValueObjectInterfaceName = "IValueObject";
     private const string HasDefaultValueInterfaceName = "IHasDefaultValue";
     private const string HasDefaultEqualityComparerInterfaceName = "IHasDefaultEqualityComparer";
-    private const string HasRandomValueInterfaceName = "IHasRandomValue";
+    private const string HasRandomValueGeneratorInterfaceName = "IHasRandomValueGenerator";
+    private const string HasUnmanagedRandomValueGeneratorInterfaceName = "IHasUnmanagedRandomValueGenerator";
 
     private const string AttributeSourceCode =
 $$"""
@@ -161,12 +162,18 @@ namespace {{GeneratedNamespace}}
                     AddGuidSpecificCode(cw, valueObjectTypeName, innerValueTypeName);
 
                 // The NewRandomValue
-                if (GetAugment(valueObjectInterfaces, HasRandomValueInterfaceName) is { TypeArguments.Length: 3 } randomIdAugmentTypeSymbol)
+                if (GetAugment(valueObjectInterfaces, HasRandomValueGeneratorInterfaceName) is { TypeArguments.Length: 3 } randomAugmentTypeSymbol)
                 {
-                    var randomType = randomIdAugmentTypeSymbol.TypeArguments[2];
+                    var randomType = randomAugmentTypeSymbol.TypeArguments[2];
                     var randomTypeName = $"global::{randomType.ContainingNamespace.ToDisplayString()}.{randomType.Name}";
-                    var isUnamanged = innerValueTypeSymbol.IsUnmanagedType;
-                    AddRandomValueMethod(cw, valueObjectTypeName, innerValueTypeName, randomTypeName, isUnamanged);
+                    AddRandomValueMethod(cw, valueObjectTypeName, randomTypeName);
+                }
+                if (GetAugment(valueObjectInterfaces, HasUnmanagedRandomValueGeneratorInterfaceName) is { TypeArguments.Length: 3 } uRandomAugmentTypeSymbol)
+                {
+                    var randomType = uRandomAugmentTypeSymbol.TypeArguments[2];
+                    var randomTypeName = $"global::{randomType.ContainingNamespace.ToDisplayString()}.{randomType.Name}";
+                    AddRandomValueMethod(cw, valueObjectTypeName, randomTypeName);
+                    AddUnmanagedRandomValueMethod(cw, valueObjectTypeName, innerValueTypeName, randomTypeName);
                 }
             }
 
@@ -361,25 +368,33 @@ namespace {{GeneratedNamespace}}
         cw.AppendLine();
     }
 
-    public static void AddRandomValueMethod(
+    public static void AddRandomValueMethod(CodeWriter cw, string valueObjectTypeName, string randomTypeName)
+    {
+        cw.AppendLine($"public static {valueObjectTypeName} NewRandomValue({randomTypeName}? random)");
+        using (cw.AddBlock())
+        {
+            cw.AppendLine("var randomValue = GenerateRandomValue(random);");
+            cw.AppendLine("return randomValue;");
+        }
+    }
+
+    public static void AddUnmanagedRandomValueMethod(
         CodeWriter cw,
         string valueObjectTypeName,
         string innerValueTypeName,
-        string randomTypeName,
-        bool isInnerValueUnamanged)
+        string randomTypeName)
     {
-        if (!isInnerValueUnamanged) return;
-
-        cw.AppendLine($"public static {valueObjectTypeName} NewRandomValue()");
+        cw.AppendLine($"public static global::System.Func<{randomTypeName}?, {valueObjectTypeName}> GenerateRandomValue => random =>");
         using (cw.AddBlock())
         {
+            cw.AppendLine($"random ??= new {randomTypeName}();");
             cw.AppendLine($"var size = global::System.Runtime.CompilerServices.Unsafe.SizeOf<{innerValueTypeName}>();");
-            cw.AppendLine($"var random = new {randomTypeName}();");
             cw.AppendLine("global::System.Span<byte> bytes = stackalloc byte[size];");
             cw.AppendLine("random.NextBytes(bytes);");
             cw.AppendLine($"var id = global::System.Runtime.InteropServices.MemoryMarshal.Cast<byte, {innerValueTypeName}>(bytes)[0];");
             cw.AppendLine($"return {valueObjectTypeName}.From(id);");
         }
+        cw.Append(";");
     }
 
     private readonly struct Target : IEquatable<Target>
