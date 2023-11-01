@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
@@ -42,7 +43,7 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
                 Predicate,
                 Transform
             )
-            .Where(static target => target is not null);
+            .Where(t => !t.Equals(default));
 
         context.RegisterSourceOutput(
             context.CompilationProvider.Combine(provider.Collect()),
@@ -55,27 +56,26 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
         return syntaxNode is StructDeclarationSyntax { AttributeLists.Count: > 0 };
     }
 
-    private static Target? Transform(GeneratorSyntaxContext context, CancellationToken cancellationToken)
+    private static Target Transform(GeneratorSyntaxContext context, CancellationToken cancellationToken)
     {
         var syntaxNode = (StructDeclarationSyntax) context.Node;
         var symbol = context.SemanticModel.GetDeclaredSymbol(syntaxNode, cancellationToken);
 
-        if (symbol is null) return null;
+        if (symbol is null) return default;
 
         var attributes = symbol.GetAttributes();
-        if (attributes.Length == 0) return null;
+        if (attributes.Length == 0) return default;
 
         var attributeData = attributes.FirstOrDefault(static a => a?.AttributeClass?.Name == $"{AttributeClassName}");
-        if (attributeData is null) return null;
+        if (attributeData is null) return default;
 
         return new Target(syntaxNode, attributeData);
     }
 
-    private static void Generate(SourceProductionContext context, Compilation compilation, ImmutableArray<Target?> targets)
+    private static void Generate(SourceProductionContext context, Compilation compilation, ImmutableArray<Target> targets)
     {
         foreach (var target in targets)
         {
-            if (target is null) continue;
             var syntax = target.Syntax;
             var attributeData = target.AttributeData;
 
@@ -118,88 +118,129 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
 
                 // public default constructor
                 var hasDefaultValue = existingInterfaces.Any(x => x.Name == HasDefaultValueInterfaceName && x.ContainingNamespace.ToDisplayString() == AugmentedNamespace);
-
-                if (hasDefaultValue)
-                {
-                    cw.AppendLine($"public {identifier}()");
-                    using (cw.AddBlock())
-                    {
-                        cw.AppendLine("Value = GetDefaultValue().Value;");
-                    }
-                }
-                else
-                {
-                    cw.AppendLine($"[global::System.Obsolete($\"Use {identifier}.{{nameof(From)}} instead.\", error: true)]");
-                    cw.AppendLine($"public {identifier}()");
-
-                    using (cw.AddBlock())
-                    {
-                        cw.AppendLine($"throw new global::System.InvalidOperationException($\"Use {identifier}.{{nameof(From)}} instead.\");");
-                    }
-                }
+                AddPublicConstructor(cw, identifier, hasDefaultValue);
 
                 // private constructor with value
-                cw.AppendLine($"private {identifier}({typeIdentifier} value)");
-                using (cw.AddBlock())
-                {
-                    cw.AppendLine("Value = value;");
-                }
+                AddPrivateConstructor(cw, identifier, typeIdentifier);
 
                 // public From method
                 cw.AppendLine($"public static {identifier} From({typeIdentifier} value) => new(value);");
                 cw.AppendLine();
 
-                // hash code
-                cw.AppendLine("public override int GetHashCode() => Value.GetHashCode();");
-                cw.AppendLine();
+                // ToString and GetHashCode
+                OverrideBaseMethods(cw);
 
-                // ToString
-                cw.AppendLine("public override string ToString() => Value.ToString();");
-                cw.AppendLine();
-
-                // IEquality<Self>
-                cw.AppendLine($"public bool Equals({identifier} other) => Value.Equals(other.Value);");
-
-                // IEquality<Value>
-                cw.AppendLine($"public bool Equals({typeIdentifier}{typeNullableAnnotation} other) => Value.Equals(other);");
-
-                // with equality comparer
-                cw.AppendLine($"public bool Equals({identifier} other, global::System.Collections.Generic.IEqualityComparer<{typeIdentifier}> comparer) => comparer.Equals(Value, other.Value);");
-
-                // object.Equals
-                cw.AppendLine("public override bool Equals(object? obj)");
-                using (cw.AddBlock())
-                {
-                    cw.AppendLine("if (obj is null) return false;");
-                    cw.AppendLine($"if (obj is {identifier} value) return Equals(value);");
-                    cw.AppendLine($"if (obj is {typeIdentifier} innerValue) return Equals(innerValue);");
-                    cw.AppendLine("return false;");
-                }
+                // Equals methods from interfaces and base object
+                ImplementEqualsMethods(cw, identifier, typeIdentifier, typeNullableAnnotation);
 
                 // equality operators
-                cw.AppendLine($"public static bool operator ==({identifier} left, {identifier} right) => left.Equals(right);");
-                cw.AppendLine($"public static bool operator !=({identifier} left, {identifier} right) => !left.Equals(right);");
-                cw.AppendLine();
-
-                cw.AppendLine($"public static bool operator ==({identifier} left, {typeIdentifier} right) => left.Equals(right);");
-                cw.AppendLine($"public static bool operator !=({identifier} left, {typeIdentifier} right) => !left.Equals(right);");
-                cw.AppendLine();
-
-                cw.AppendLine($"public static bool operator ==({typeIdentifier} left, {identifier} right) => right.Equals(left);");
-                cw.AppendLine($"public static bool operator !=({typeIdentifier} left, {identifier} right) => !right.Equals(left);");
-                cw.AppendLine();
+                AddEqualityOperators(cw, identifier, typeIdentifier);
 
                 // explicit cast operators
-                cw.AppendLine($"public static explicit operator {identifier}({typeIdentifier} value) => From(value);");
-                cw.AppendLine($"public static explicit operator {typeIdentifier}({identifier} value) => value.Value;");
-                cw.AppendLine();
+                AddExplicitCastOperators(cw, identifier, typeIdentifier);
             }
 
             context.AddSource($"{identifier}.g.cs", SourceText.From(cw.ToString(), Encoding.UTF8));
         }
     }
 
-    private class Target
+    private static void AddPublicConstructor(CodeWriter cw, string valueObjectTypeName, bool hasDefaultValue)
+    {
+        if (hasDefaultValue)
+        {
+            cw.AppendLine($"public {valueObjectTypeName}()");
+            using (cw.AddBlock())
+            {
+                cw.AppendLine("Value = GetDefaultValue().Value;");
+            }
+        }
+        else
+        {
+            cw.AppendLine($"[global::System.Obsolete($\"Use {valueObjectTypeName}.{{nameof(From)}} instead.\", error: true)]");
+            cw.AppendLine($"public {valueObjectTypeName}()");
+
+            using (cw.AddBlock())
+            {
+                cw.AppendLine($"throw new global::System.InvalidOperationException($\"Use {valueObjectTypeName}.{{nameof(From)}} instead.\");");
+            }
+        }
+    }
+
+    private static void AddPrivateConstructor(CodeWriter cw, string valueObjectTypeName, string innerValueTypeName)
+    {
+        cw.AppendLine($"private {valueObjectTypeName}({innerValueTypeName} value)");
+        using (cw.AddBlock())
+        {
+            cw.AppendLine("Value = value;");
+        }
+    }
+
+    private static void OverrideBaseMethods(CodeWriter cw)
+    {
+        // hash code
+        cw.AppendLine("public override int GetHashCode() => Value.GetHashCode();");
+        cw.AppendLine();
+
+        // ToString
+        cw.AppendLine("public override string ToString() => Value.ToString();");
+        cw.AppendLine();
+    }
+
+    private static void ImplementEqualsMethods(
+        CodeWriter cw,
+        string valueObjectTypeName,
+        string innerValueTypeName,
+        string innerValueTypeNullableAnnotation)
+    {
+        // IEquality<Self>
+        cw.AppendLine($"public bool Equals({valueObjectTypeName} other) => Value.Equals(other.Value);");
+
+        // IEquality<Value>
+        cw.AppendLine($"public bool Equals({innerValueTypeName}{innerValueTypeNullableAnnotation} other) => Value.Equals(other);");
+
+        // with equality comparer
+        cw.AppendLine($"public bool Equals({valueObjectTypeName} other, global::System.Collections.Generic.IEqualityComparer<{innerValueTypeName}> comparer) => comparer.Equals(Value, other.Value);");
+
+        // object.Equals
+        cw.AppendLine("public override bool Equals(object? obj)");
+        using (cw.AddBlock())
+        {
+            cw.AppendLine("if (obj is null) return false;");
+            cw.AppendLine($"if (obj is {valueObjectTypeName} value) return Equals(value);");
+            cw.AppendLine($"if (obj is {innerValueTypeName} innerValue) return Equals(innerValue);");
+            cw.AppendLine("return false;");
+        }
+    }
+
+    private static void AddEqualityOperators(
+        CodeWriter cw,
+        string valueObjectTypeName,
+        string innerValueTypeName)
+    {
+        cw.AppendLine($"public static bool operator ==({valueObjectTypeName} left, {valueObjectTypeName} right) => left.Equals(right);");
+        cw.AppendLine($"public static bool operator !=({valueObjectTypeName} left, {valueObjectTypeName} right) => !left.Equals(right);");
+        cw.AppendLine();
+
+        cw.AppendLine($"public static bool operator ==({valueObjectTypeName} left, {innerValueTypeName} right) => left.Equals(right);");
+        cw.AppendLine($"public static bool operator !=({valueObjectTypeName} left, {innerValueTypeName} right) => !left.Equals(right);");
+        cw.AppendLine();
+
+        cw.AppendLine($"public static bool operator ==({innerValueTypeName} left, {valueObjectTypeName} right) => right.Equals(left);");
+        cw.AppendLine($"public static bool operator !=({innerValueTypeName} left, {valueObjectTypeName} right) => !right.Equals(left);");
+        cw.AppendLine();
+    }
+
+    private static void AddExplicitCastOperators(
+        CodeWriter cw,
+        string valueObjectTypeName,
+        string innerValueTypeName)
+    {
+        cw.AppendLine($"public static explicit operator {valueObjectTypeName}({innerValueTypeName} value) => From(value);");
+        cw.AppendLine($"public static explicit operator {innerValueTypeName}({valueObjectTypeName} value) => value.Value;");
+        cw.AppendLine();
+    }
+
+    private readonly struct Target : IEquatable<Target>
     {
         public readonly StructDeclarationSyntax Syntax;
         public readonly AttributeData AttributeData;
@@ -208,6 +249,24 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
         {
             Syntax = syntax;
             AttributeData = attributeData;
+        }
+
+        public bool Equals(Target other)
+        {
+            return Syntax.Equals(other.Syntax) && AttributeData.Equals(other.AttributeData);
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is Target other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return (Syntax.GetHashCode() * 397) ^ AttributeData.GetHashCode();
+            }
         }
     }
 }

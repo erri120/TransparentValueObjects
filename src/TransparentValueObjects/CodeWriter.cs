@@ -6,7 +6,7 @@ namespace TransparentValueObjects;
 public class CodeWriter : ICodeBlock
 {
     private readonly StringBuilder _stringBuilder = new();
-    private int _depth = 0;
+    private int _depth;
 
     public ICodeBlock AddBlock()
     {
