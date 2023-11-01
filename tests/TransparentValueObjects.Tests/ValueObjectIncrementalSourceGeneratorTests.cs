@@ -30,6 +30,7 @@ public readonly partial struct SampleValueObject :
 #nullable enable
 namespace TestNamespace;
 
+[global::System.Diagnostics.DebuggerDisplay("{Value}")]
 [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage(Justification = "Auto-generated.")]
 readonly partial struct SampleValueObject :
     global::TransparentValueObjects.Augments.IValueObject<global::System.String>,

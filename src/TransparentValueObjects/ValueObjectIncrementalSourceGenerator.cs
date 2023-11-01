@@ -104,6 +104,7 @@ namespace {{GeneratedNamespace}}
             cw.AppendLine($"namespace {namespaceName};");
             cw.AppendLine();
 
+            cw.AppendLine("[global::System.Diagnostics.DebuggerDisplay(\"{Value}\")]");
             cw.AppendLine("[global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage(Justification = \"Auto-generated.\")]");
             cw.AppendLine($"readonly partial struct {valueObjectTypeName} :");
 
