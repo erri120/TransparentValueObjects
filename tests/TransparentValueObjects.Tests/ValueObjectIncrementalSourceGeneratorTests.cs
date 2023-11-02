@@ -132,7 +132,6 @@ public global::System.Int32 CompareTo(SampleValueObject other) => Value.CompareT
         var generated = runResult.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("SampleValueObject.g.cs"));
         generated.Should().NotBeNull();
 
-        var t = generated!.GetText().ToString();
         NormalizeEquals(generated!.GetText().ToString(), Output);
     }
 
