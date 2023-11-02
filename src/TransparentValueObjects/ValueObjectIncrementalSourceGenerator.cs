@@ -19,6 +19,7 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
     private const string ValueObjectInterfaceName = "IValueObject";
     private const string HasDefaultValueInterfaceName = "IHasDefaultValue";
     private const string HasDefaultEqualityComparerInterfaceName = "IHasDefaultEqualityComparer";
+    private const string HasEfCoreInterfaceName = "IHasEfCore";
 
     private const string AttributeSourceCode =
 $$"""
@@ -158,6 +159,12 @@ namespace {{GeneratedNamespace}}
 
                 if (innerValueTypeName == "global::System.Guid")
                     AddGuidSpecificCode(cw, valueObjectTypeName, innerValueTypeName);
+
+                // System.Text.Json
+                if (HasAugment(valueObjectInterfaces, HasSystemTextJsonInterfaceName))
+                {
+                    AddSystemTextJsonClasses(cw, valueObjectTypeName, innerValueTypeName);
+                }
             }
 
             context.AddSource($"{valueObjectTypeName}.g.cs", SourceText.From(cw.ToString(), Encoding.UTF8));
@@ -344,6 +351,39 @@ namespace {{GeneratedNamespace}}
     {
         cw.AppendLine($"public static {valueObjectTypeName} NewId() => From({innerValueTypeName}.NewGuid());");
         cw.AppendLine();
+    }
+
+    public static void AddSystemTextJsonClasses(CodeWriter cw, string valueObjectTypeName, string innerValueTypeName)
+    {
+        cw.AppendLine($"public class SystemTextJsonConverter : global::System.Text.Json.Serialization.JsonConverter<{valueObjectTypeName}>");
+        using (cw.AddBlock())
+        {
+            cw.AppendLine($"public override {valueObjectTypeName} Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type typeToConvert, global::System.Text.Json.JsonSerializerOptions options)");
+            using (cw.AddBlock())
+            {
+                cw.AppendLine($"var valueObject = global::System.Text.Json.JsonSerializer.Deserialize<{innerValueTypeName}>(ref reader, options);");
+                cw.AppendLine($"return {valueObjectTypeName}.From(valueObject);");
+            }
+
+            cw.AppendLine($"public override void Write(global::System.Text.Json.Utf8JsonWriter writer, {valueObjectTypeName} value, global::System.Text.Json.JsonSerializerOptions options)");
+            using (cw.AddBlock())
+            {
+                cw.AppendLine("global::System.Text.Json.JsonSerializer.Serialize(writer, value.Value, options);");
+            }
+
+            cw.AppendLine($"public override {valueObjectTypeName} ReadAsPropertyName(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type typeToConvert, global::System.Text.Json.JsonSerializerOptions options)");
+            using (cw.AddBlock())
+            {
+                cw.AppendLine($"var valueObject = global::System.Text.Json.JsonSerializer.Deserialize<{innerValueTypeName}>(ref reader, options);");
+                cw.AppendLine($"return {valueObjectTypeName}.From(valueObject);");
+            }
+
+            cw.AppendLine($"public override void WriteAsPropertyName(global::System.Text.Json.Utf8JsonWriter writer, {valueObjectTypeName} value, global::System.Text.Json.JsonSerializerOptions options)");
+            using (cw.AddBlock())
+            {
+                cw.AppendLine("writer.WritePropertyName(global::System.Text.Json.JsonSerializer.Serialize(value.Value, options));");
+            }
+        }
     }
 
     private readonly struct Target : IEquatable<Target>

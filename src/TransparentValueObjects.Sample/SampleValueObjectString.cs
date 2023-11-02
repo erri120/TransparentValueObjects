@@ -6,10 +6,11 @@ using TransparentValueObjects.Generated;
 namespace TransparentValueObjects.Sample;
 
 [ValueObject<string>]
-public readonly partial struct SampleValueObject :
-    IHasDefaultValue<SampleValueObject, string>,
-    IHasDefaultEqualityComparer<SampleValueObject, string>
+public readonly partial struct SampleValueObjectString :
+    IHasDefaultValue<SampleValueObjectString, string>,
+    IHasDefaultEqualityComparer<SampleValueObjectString, string>,
+    IHasSystemTextJson<SampleValueObjectString, string>
 {
-    public static SampleValueObject DefaultValue => From("Hello World!");
+    public static SampleValueObjectString DefaultValue => From("Hello World!");
     public static IEqualityComparer<string> InnerValueDefaultEqualityComparer => StringComparer.OrdinalIgnoreCase;
 }
