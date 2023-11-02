@@ -249,54 +249,6 @@ public override bool Equals(object? obj)
     }
 
     [Fact]
-    public void Test_AddRandomValueMethod()
-    {
-        const string valueObjectTypeName = "MyValueObject";
-        const string randomTypeName = "System.Random";
-        const string output =
-            $$"""
-              public static {{valueObjectTypeName}} NewRandomValue({{randomTypeName}}? random)
-              {
-              	var randomValue = GenerateRandomValue(random);
-              	return randomValue;
-              }
-              """;
-
-        var cw = new CodeWriter();
-        ValueObjectIncrementalSourceGenerator.AddRandomValueMethod(cw, valueObjectTypeName, randomTypeName);
-
-        NormalizeEquals(cw.ToString(), output);
-    }
-
-    [Fact]
-    public void Test_AddUnmanagedRandomValueMethod()
-    {
-        const string valueObjectTypeName = "MyValueObject";
-        const string innerValueTypeName = "System.Int32";
-        const string randomTypeName = "System.Random";
-        const string output =
-$$"""
-public static global::System.Func<{{randomTypeName}}?, {{valueObjectTypeName}}> GenerateRandomValue => random =>
-{
-    random ??= new {{randomTypeName}}();
-    var size = global::System.Runtime.CompilerServices.Unsafe.SizeOf<{{innerValueTypeName}}>();
-    global::System.Span<byte> bytes = stackalloc byte[size];
-    random.NextBytes(bytes);
-    var id = global::System.Runtime.InteropServices.MemoryMarshal.Cast<byte, {{innerValueTypeName}}>(bytes)[0];
-    return {{valueObjectTypeName}}.From(id);
-}
-
-;
-""";
-
-        var cw = new CodeWriter();
-        ValueObjectIncrementalSourceGenerator.AddUnmanagedRandomValueMethod(cw, valueObjectTypeName, innerValueTypeName, randomTypeName);
-
-        var t = cw.ToString();
-        NormalizeEquals(cw.ToString(), output);
-    }
-
-    [Fact]
     public void Test_AddEqualityOperators()
     {
         const string valueObjectTypeName = "MyValueObject";
@@ -332,6 +284,53 @@ public static explicit operator {{innerValueTypeName}}({{valueObjectTypeName}} v
 
         var cw = new CodeWriter();
         ValueObjectIncrementalSourceGenerator.AddExplicitCastOperators(cw, valueObjectTypeName, innerValueTypeName);
+
+        NormalizeEquals(cw.ToString(), output);
+    }
+
+    [Fact]
+    public void Test_AddRandomValueMethod()
+    {
+        const string valueObjectTypeName = "MyValueObject";
+        const string randomTypeName = "System.Random";
+        const string output =
+$$"""
+public static {{valueObjectTypeName}} NewRandomValue({{randomTypeName}}? random)
+{
+    var randomValue = GenerateRandomValue(random);
+    return randomValue;
+}
+""";
+
+        var cw = new CodeWriter();
+        ValueObjectIncrementalSourceGenerator.AddRandomValueMethod(cw, valueObjectTypeName, randomTypeName);
+
+        NormalizeEquals(cw.ToString(), output);
+    }
+
+    [Fact]
+    public void Test_AddUnmanagedRandomValueMethod()
+    {
+        const string valueObjectTypeName = "MyValueObject";
+        const string innerValueTypeName = "System.Int32";
+        const string randomTypeName = "System.Random";
+        const string output =
+$$"""
+public static global::System.Func<{{randomTypeName}}?, {{valueObjectTypeName}}> GenerateRandomValue => random =>
+{
+    random ??= new {{randomTypeName}}();
+    var size = global::System.Runtime.CompilerServices.Unsafe.SizeOf<{{innerValueTypeName}}>();
+    global::System.Span<byte> bytes = stackalloc byte[size];
+    random.NextBytes(bytes);
+    var id = global::System.Runtime.InteropServices.MemoryMarshal.Cast<byte, {{innerValueTypeName}}>(bytes)[0];
+    return {{valueObjectTypeName}}.From(id);
+}
+
+;
+""";
+
+        var cw = new CodeWriter();
+        ValueObjectIncrementalSourceGenerator.AddUnmanagedRandomValueMethod(cw, valueObjectTypeName, innerValueTypeName, randomTypeName);
 
         NormalizeEquals(cw.ToString(), output);
     }
