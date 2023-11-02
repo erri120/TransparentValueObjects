@@ -161,10 +161,9 @@ namespace {{GeneratedNamespace}}
                     AddGuidSpecificCode(cw, valueObjectTypeName, innerValueTypeName);
 
                 // EF Core
-                if (HasAugment(valueObjectInterfaces, HasEfCoreInterfaceName))
-                {
+                var hasEfCore = HasAugment(valueObjectInterfaces, HasEfCoreInterfaceName);
+                if (hasEfCore)
                     AddEFCoreClasses(cw, valueObjectTypeName, innerValueTypeName);
-                }
             }
 
             context.AddSource($"{valueObjectTypeName}.g.cs", SourceText.From(cw.ToString(), Encoding.UTF8));
