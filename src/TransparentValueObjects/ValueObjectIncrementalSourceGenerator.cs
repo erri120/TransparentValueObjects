@@ -19,7 +19,7 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
     private const string ValueObjectInterfaceName = "IValueObject";
     private const string HasDefaultValueInterfaceName = "IHasDefaultValue";
     private const string HasDefaultEqualityComparerInterfaceName = "IHasDefaultEqualityComparer";
-    private const string HasEfCoreInterfaceName = "IHasEfCore";
+    private const string HasSystemTextJsonInterfaceName = "IHasSystemTextJson";
 
     private const string AttributeSourceCode =
 $$"""
@@ -161,10 +161,9 @@ namespace {{GeneratedNamespace}}
                     AddGuidSpecificCode(cw, valueObjectTypeName, innerValueTypeName);
 
                 // System.Text.Json
-                if (HasAugment(valueObjectInterfaces, HasSystemTextJsonInterfaceName))
-                {
+                var hasSystemTextJson = HasAugment(valueObjectInterfaces, HasSystemTextJsonInterfaceName);
+                if (hasSystemTextJson)
                     AddSystemTextJsonClasses(cw, valueObjectTypeName, innerValueTypeName);
-                }
             }
 
             context.AddSource($"{valueObjectTypeName}.g.cs", SourceText.From(cw.ToString(), Encoding.UTF8));
