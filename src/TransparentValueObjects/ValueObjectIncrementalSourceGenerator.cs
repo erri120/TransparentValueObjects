@@ -19,6 +19,7 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
     private const string ValueObjectInterfaceName = "IValueObject";
     private const string HasDefaultValueInterfaceName = "IHasDefaultValue";
     private const string HasDefaultEqualityComparerInterfaceName = "IHasDefaultEqualityComparer";
+    private const string HasEfCoreInterfaceName = "IHasEfCore";
 
     private const string AttributeSourceCode =
 $$"""
@@ -158,6 +159,12 @@ namespace {{GeneratedNamespace}}
 
                 if (innerValueTypeName == "global::System.Guid")
                     AddGuidSpecificCode(cw, valueObjectTypeName, innerValueTypeName);
+
+                // EF Core
+                if (HasAugment(valueObjectInterfaces, HasEfCoreInterfaceName))
+                {
+                    AddEFCoreClasses(cw, valueObjectTypeName, innerValueTypeName);
+                }
             }
 
             context.AddSource($"{valueObjectTypeName}.g.cs", SourceText.From(cw.ToString(), Encoding.UTF8));
@@ -344,6 +351,26 @@ namespace {{GeneratedNamespace}}
     {
         cw.AppendLine($"public static {valueObjectTypeName} NewId() => From({innerValueTypeName}.NewGuid());");
         cw.AppendLine();
+    }
+
+    public static void AddEFCoreClasses(CodeWriter cw, string valueObjectTypeName, string innerValueTypeName)
+    {
+        cw.AppendLine($"public class EfCoreValueConverter : global::Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<{valueObjectTypeName}, {innerValueTypeName}>");
+        using (cw.AddBlock())
+        {
+            cw.AppendLine("public EfCoreValueConverter() : this(null) { }");
+            cw.AppendLine("public EfCoreValueConverter(global::Microsoft.EntityFrameworkCore.Storage.ValueConversion.ConverterMappingHints? mappingHints = null) : base(");
+            cw.AppendLine("\tvalue => value.Value,");
+            cw.AppendLine("\tinnerValue => From(innerValue), mappingHints) { }");
+        }
+
+        cw.AppendLine($"public class EfCoreValueComparer : global::Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer<{valueObjectTypeName}>");
+        using (cw.AddBlock())
+        {
+            cw.AppendLine("public EfCoreValueComparer() : base((left, right) => right.Equals(left), value => value.GetHashCode(), value => From(value.Value)) { }");
+            cw.AppendLine($"public override int GetHashCode({valueObjectTypeName} value) => value.GetHashCode();");
+            cw.AppendLine($"public override bool Equals({valueObjectTypeName} left, {valueObjectTypeName} right) => right.Equals(left);");
+        }
     }
 
     private readonly struct Target : IEquatable<Target>
