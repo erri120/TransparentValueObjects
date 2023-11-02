@@ -154,16 +154,16 @@ namespace {{GeneratedNamespace}}
                 // explicit cast operators
                 AddExplicitCastOperators(cw, valueObjectTypeName, innerValueTypeName);
 
+                // EF Core
+                var hasEfCore = HasAugment(valueObjectInterfaces, HasEfCoreInterfaceName);
+                if (hasEfCore)
+                    AddEFCoreClasses(cw, valueObjectTypeName, innerValueTypeName);
+
                 if (comparableInterfaceTypeSymbol is not null)
                     ForwardInterface(cw, valueObjectTypeName, comparableInterfaceTypeSymbol);
 
                 if (innerValueTypeName == "global::System.Guid")
                     AddGuidSpecificCode(cw, valueObjectTypeName, innerValueTypeName);
-
-                // EF Core
-                var hasEfCore = HasAugment(valueObjectInterfaces, HasEfCoreInterfaceName);
-                if (hasEfCore)
-                    AddEFCoreClasses(cw, valueObjectTypeName, innerValueTypeName);
             }
 
             context.AddSource($"{valueObjectTypeName}.g.cs", SourceText.From(cw.ToString(), Encoding.UTF8));
