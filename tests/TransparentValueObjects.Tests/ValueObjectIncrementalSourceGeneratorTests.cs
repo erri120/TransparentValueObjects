@@ -17,7 +17,8 @@ namespace TestNamespace;
 [TransparentValueObjects.Generated.ValueObject<string>]
 public readonly partial struct SampleValueObject :
     TransparentValueObjects.Augments.IHasDefaultValue<SampleValueObject, string>
-    TransparentValueObjects.Augments.IHasDefaultEqualityComparer<SampleValueObject, string>
+    TransparentValueObjects.Augments.IHasDefaultEqualityComparer<SampleValueObject, string>,
+    TransparentValueObjects.Augments.IHasSystemTextJson<SampleValueObject, string>
 {
     public static SampleValueObject GetDefaultValue() => From("Hello World!");
     public static IEqualityComparer<string> InnerValueDefaultEqualityComparer => StringComparer.OrdinalIgnoreCase;
@@ -33,16 +34,17 @@ namespace TestNamespace;
 [global::System.Diagnostics.DebuggerDisplay("{Value}")]
 [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage(Justification = "Auto-generated.")]
 readonly partial struct SampleValueObject :
-    global::TransparentValueObjects.Augments.IValueObject<global::System.String>,
+	global::TransparentValueObjects.Augments.IValueObject<global::System.String>,
 	global::System.IEquatable<SampleValueObject>,
-	global::System.IEquatable<global::System.String>
+	global::System.IEquatable<global::System.String>,
+	global::System.IComparable<SampleValueObject>
 {
 	public readonly global::System.String Value;
 
-    public SampleValueObject()
-    {
-        Value = DefaultValue.Value;
-    }
+	public SampleValueObject()
+	{
+		Value = DefaultValue.Value;
+	}
 
 	private SampleValueObject(global::System.String value)
 	{
@@ -78,6 +80,33 @@ readonly partial struct SampleValueObject :
 	public static explicit operator SampleValueObject(global::System.String value) => From(value);
 	public static explicit operator global::System.String(SampleValueObject value) => value.Value;
 
+	public class SystemTextJsonConverter : global::System.Text.Json.Serialization.JsonConverter<SampleValueObject>
+	{
+		public override SampleValueObject Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type typeToConvert, global::System.Text.Json.JsonSerializerOptions options)
+		{
+			var valueObject = global::System.Text.Json.JsonSerializer.Deserialize<global::System.String>(ref reader, options);
+			return SampleValueObject.From(valueObject);
+		}
+
+		public override void Write(global::System.Text.Json.Utf8JsonWriter writer, SampleValueObject value, global::System.Text.Json.JsonSerializerOptions options)
+		{
+			global::System.Text.Json.JsonSerializer.Serialize(writer, value.Value, options);
+		}
+
+		public override SampleValueObject ReadAsPropertyName(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type typeToConvert, global::System.Text.Json.JsonSerializerOptions options)
+		{
+			var valueObject = global::System.Text.Json.JsonSerializer.Deserialize<global::System.String>(ref reader, options);
+			return SampleValueObject.From(valueObject);
+		}
+
+		public override void WriteAsPropertyName(global::System.Text.Json.Utf8JsonWriter writer, SampleValueObject value, global::System.Text.Json.JsonSerializerOptions options)
+		{
+			writer.WritePropertyName(global::System.Text.Json.JsonSerializer.Serialize(value.Value, options));
+		}
+
+	}
+
+public global::System.Int32 CompareTo(SampleValueObject other) => Value.CompareTo(other);
 }
 """;
 
@@ -103,6 +132,7 @@ readonly partial struct SampleValueObject :
         var generated = runResult.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("SampleValueObject.g.cs"));
         generated.Should().NotBeNull();
 
+        var t = generated!.GetText().ToString();
         NormalizeEquals(generated!.GetText().ToString(), Output);
     }
 
@@ -265,6 +295,48 @@ public static explicit operator {{innerValueTypeName}}({{valueObjectTypeName}} v
 
         var cw = new CodeWriter();
         ValueObjectIncrementalSourceGenerator.AddExplicitCastOperators(cw, valueObjectTypeName, innerValueTypeName);
+
+        NormalizeEquals(cw.ToString(), output);
+    }
+
+
+
+    [Fact]
+    public void Test_AddSystemTextJsonClasses()
+    {
+        const string valueObjectTypeName = "MyValueObject";
+        const string innerValueTypeName = "string";
+        const string output =
+$$"""
+public class SystemTextJsonConverter : global::System.Text.Json.Serialization.JsonConverter<{{valueObjectTypeName}}>
+{
+	public override {{valueObjectTypeName}} Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type typeToConvert, global::System.Text.Json.JsonSerializerOptions options)
+	{
+		var valueObject = global::System.Text.Json.JsonSerializer.Deserialize<{{innerValueTypeName}}>(ref reader, options);
+		return {{valueObjectTypeName}}.From(valueObject);
+	}
+
+	public override void Write(global::System.Text.Json.Utf8JsonWriter writer, {{valueObjectTypeName}} value, global::System.Text.Json.JsonSerializerOptions options)
+	{
+		global::System.Text.Json.JsonSerializer.Serialize(writer, value.Value, options);
+	}
+
+	public override {{valueObjectTypeName}} ReadAsPropertyName(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type typeToConvert, global::System.Text.Json.JsonSerializerOptions options)
+	{
+		var valueObject = global::System.Text.Json.JsonSerializer.Deserialize<{{innerValueTypeName}}>(ref reader, options);
+		return {{valueObjectTypeName}}.From(valueObject);
+	}
+
+	public override void WriteAsPropertyName(global::System.Text.Json.Utf8JsonWriter writer, {{valueObjectTypeName}} value, global::System.Text.Json.JsonSerializerOptions options)
+	{
+		writer.WritePropertyName(global::System.Text.Json.JsonSerializer.Serialize(value.Value, options));
+	}
+
+}
+""";
+
+        var cw = new CodeWriter();
+        ValueObjectIncrementalSourceGenerator.AddSystemTextJsonClasses(cw, valueObjectTypeName, innerValueTypeName);
 
         NormalizeEquals(cw.ToString(), output);
     }
