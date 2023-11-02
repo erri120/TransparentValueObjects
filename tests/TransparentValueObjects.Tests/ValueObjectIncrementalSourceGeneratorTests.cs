@@ -19,9 +19,19 @@ public readonly partial struct SampleValueObject :
     TransparentValueObjects.Augments.IHasDefaultValue<SampleValueObject, string>
     TransparentValueObjects.Augments.IHasDefaultEqualityComparer<SampleValueObject, string>
     TransparentValueObjects.Augments.IHasDefaultEqualityComparer<SampleValueObject, string>
+    TransparentValueObjects.Augments.IHasRandomValueGenerator<SampleValueObject, string, Random>
 {
     public static SampleValueObject GetDefaultValue() => From("Hello World!");
     public static IEqualityComparer<string> InnerValueDefaultEqualityComparer => StringComparer.OrdinalIgnoreCase;
+    public static Func<Random?, SampleValueObjectString> GenerateRandomValue => random =>
+    {
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        return From(string.Create(10, random ?? new Random(), static (span, random) =>
+        {
+            for (var i = 0; i < span.Length; i++)
+                span[i] = chars[random.Next(0, chars.Length)];
+        }));
+    };
 }
 """;
 
@@ -34,16 +44,17 @@ namespace TestNamespace;
 [global::System.Diagnostics.DebuggerDisplay("{Value}")]
 [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage(Justification = "Auto-generated.")]
 readonly partial struct SampleValueObject :
-    global::TransparentValueObjects.Augments.IValueObject<global::System.String>,
+	global::TransparentValueObjects.Augments.IValueObject<global::System.String>,
 	global::System.IEquatable<SampleValueObject>,
-	global::System.IEquatable<global::System.String>
+	global::System.IEquatable<global::System.String>,
+	global::System.IComparable<SampleValueObject>
 {
 	public readonly global::System.String Value;
 
-    public SampleValueObject()
-    {
-        Value = DefaultValue.Value;
-    }
+	public SampleValueObject()
+	{
+		Value = DefaultValue.Value;
+	}
 
 	private SampleValueObject(global::System.String value)
 	{
@@ -78,6 +89,13 @@ readonly partial struct SampleValueObject :
 
 	public static explicit operator SampleValueObject(global::System.String value) => From(value);
 	public static explicit operator global::System.String(SampleValueObject value) => value.Value;
+
+public global::System.Int32 CompareTo(SampleValueObject other) => Value.CompareTo(other);
+	public static SampleValueObject NewRandomValue(global::<global namespace>.Random? random)
+	{
+		var randomValue = GenerateRandomValue(random);
+		return randomValue;
+	}
 
 }
 """;
@@ -227,6 +245,54 @@ public override bool Equals(object? obj)
         var cw = new CodeWriter();
         ValueObjectIncrementalSourceGenerator.ImplementEqualsMethods(cw, valueObjectTypeName, innerValueTypeName, "?", hasDefaultEqualityComparer: true);
 
+        NormalizeEquals(cw.ToString(), output);
+    }
+
+    [Fact]
+    public void Test_AddRandomValueMethod()
+    {
+        const string valueObjectTypeName = "MyValueObject";
+        const string randomTypeName = "System.Random";
+        const string output =
+            $$"""
+              public static {{valueObjectTypeName}} NewRandomValue({{randomTypeName}}? random)
+              {
+              	var randomValue = GenerateRandomValue(random);
+              	return randomValue;
+              }
+              """;
+
+        var cw = new CodeWriter();
+        ValueObjectIncrementalSourceGenerator.AddRandomValueMethod(cw, valueObjectTypeName, randomTypeName);
+
+        NormalizeEquals(cw.ToString(), output);
+    }
+
+    [Fact]
+    public void Test_AddUnmanagedRandomValueMethod()
+    {
+        const string valueObjectTypeName = "MyValueObject";
+        const string innerValueTypeName = "System.Int32";
+        const string randomTypeName = "System.Random";
+        const string output =
+$$"""
+public static global::System.Func<{{randomTypeName}}?, {{valueObjectTypeName}}> GenerateRandomValue => random =>
+{
+    random ??= new {{randomTypeName}}();
+    var size = global::System.Runtime.CompilerServices.Unsafe.SizeOf<{{innerValueTypeName}}>();
+    global::System.Span<byte> bytes = stackalloc byte[size];
+    random.NextBytes(bytes);
+    var id = global::System.Runtime.InteropServices.MemoryMarshal.Cast<byte, {{innerValueTypeName}}>(bytes)[0];
+    return {{valueObjectTypeName}}.From(id);
+}
+
+;
+""";
+
+        var cw = new CodeWriter();
+        ValueObjectIncrementalSourceGenerator.AddUnmanagedRandomValueMethod(cw, valueObjectTypeName, innerValueTypeName, randomTypeName);
+
+        var t = cw.ToString();
         NormalizeEquals(cw.ToString(), output);
     }
 
