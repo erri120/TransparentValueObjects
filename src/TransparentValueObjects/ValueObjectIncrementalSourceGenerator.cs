@@ -155,12 +155,6 @@ namespace {{GeneratedNamespace}}
                 // explicit cast operators
                 AddExplicitCastOperators(cw, valueObjectTypeName, innerValueTypeName);
 
-                if (comparableInterfaceTypeSymbol is not null)
-                    ForwardInterface(cw, valueObjectTypeName, comparableInterfaceTypeSymbol);
-
-                if (innerValueTypeName == "global::System.Guid")
-                    AddGuidSpecificCode(cw, valueObjectTypeName, innerValueTypeName);
-
                 // The NewRandomValue
                 if (GetAugment(valueObjectInterfaces, HasRandomValueGeneratorInterfaceName) is { TypeArguments.Length: 3 } randomAugmentTypeSymbol)
                 {
@@ -175,6 +169,12 @@ namespace {{GeneratedNamespace}}
                     AddRandomValueMethod(cw, valueObjectTypeName, randomTypeName);
                     AddUnmanagedRandomValueMethod(cw, valueObjectTypeName, innerValueTypeName, randomTypeName);
                 }
+
+                if (comparableInterfaceTypeSymbol is not null)
+                    ForwardInterface(cw, valueObjectTypeName, comparableInterfaceTypeSymbol);
+
+                if (innerValueTypeName == "global::System.Guid")
+                    AddGuidSpecificCode(cw, valueObjectTypeName, innerValueTypeName);
             }
 
             context.AddSource($"{valueObjectTypeName}.g.cs", SourceText.From(cw.ToString(), Encoding.UTF8));

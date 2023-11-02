@@ -90,13 +90,13 @@ readonly partial struct SampleValueObject :
 	public static explicit operator SampleValueObject(global::System.String value) => From(value);
 	public static explicit operator global::System.String(SampleValueObject value) => value.Value;
 
-public global::System.Int32 CompareTo(SampleValueObject other) => Value.CompareTo(other);
 	public static SampleValueObject NewRandomValue(global::<global namespace>.Random? random)
 	{
 		var randomValue = GenerateRandomValue(random);
 		return randomValue;
 	}
 
+public global::System.Int32 CompareTo(SampleValueObject other) => Value.CompareTo(other);
 }
 """;
 
