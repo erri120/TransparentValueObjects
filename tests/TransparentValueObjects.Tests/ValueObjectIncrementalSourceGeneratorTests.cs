@@ -249,35 +249,6 @@ public override bool Equals(object? obj)
     }
 
     [Fact]
-    public void Test_AddEFCoreClasses()
-    {
-        const string valueObjectTypeName = "MyValueObject";
-        const string innerValueTypeName = "string";
-        const string output =
-$$"""
-public class EfCoreValueConverter : global::Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<{{valueObjectTypeName}}, {{innerValueTypeName}}>
-{
-	public EfCoreValueConverter() : this(null) { }
-	public EfCoreValueConverter(global::Microsoft.EntityFrameworkCore.Storage.ValueConversion.ConverterMappingHints? mappingHints = null) : base(
-		value => value.Value,
-		innerValue => From(innerValue), mappingHints) { }
-}
-
-public class EfCoreValueComparer : global::Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer<{{valueObjectTypeName}}>
-{
-	public EfCoreValueComparer() : base((left, right) => right.Equals(left), value => value.GetHashCode(), value => From(value.Value)) { }
-	public override int GetHashCode({{valueObjectTypeName}} value) => value.GetHashCode();
-	public override bool Equals({{valueObjectTypeName}} left, {{valueObjectTypeName}} right) => right.Equals(left);
-}
-""";
-
-        var cw = new CodeWriter();
-        ValueObjectIncrementalSourceGenerator.AddEFCoreClasses(cw, valueObjectTypeName, innerValueTypeName);
-
-        NormalizeEquals(cw.ToString(), output);
-    }
-
-    [Fact]
     public void Test_AddEqualityOperators()
     {
         const string valueObjectTypeName = "MyValueObject";
@@ -313,6 +284,35 @@ public static explicit operator {{innerValueTypeName}}({{valueObjectTypeName}} v
 
         var cw = new CodeWriter();
         ValueObjectIncrementalSourceGenerator.AddExplicitCastOperators(cw, valueObjectTypeName, innerValueTypeName);
+
+        NormalizeEquals(cw.ToString(), output);
+    }
+
+    [Fact]
+    public void Test_AddEFCoreClasses()
+    {
+        const string valueObjectTypeName = "MyValueObject";
+        const string innerValueTypeName = "string";
+        const string output =
+$$"""
+public class EfCoreValueConverter : global::Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<{{valueObjectTypeName}}, {{innerValueTypeName}}>
+{
+	public EfCoreValueConverter() : this(null) { }
+	public EfCoreValueConverter(global::Microsoft.EntityFrameworkCore.Storage.ValueConversion.ConverterMappingHints? mappingHints = null) : base(
+		value => value.Value,
+		innerValue => From(innerValue), mappingHints) { }
+}
+
+public class EfCoreValueComparer : global::Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer<{{valueObjectTypeName}}>
+{
+	public EfCoreValueComparer() : base((left, right) => right.Equals(left), value => value.GetHashCode(), value => From(value.Value)) { }
+	public override int GetHashCode({{valueObjectTypeName}} value) => value.GetHashCode();
+	public override bool Equals({{valueObjectTypeName}} left, {{valueObjectTypeName}} right) => right.Equals(left);
+}
+""";
+
+        var cw = new CodeWriter();
+        ValueObjectIncrementalSourceGenerator.AddEFCoreClasses(cw, valueObjectTypeName, innerValueTypeName);
 
         NormalizeEquals(cw.ToString(), output);
     }
