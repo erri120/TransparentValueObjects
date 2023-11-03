@@ -35,7 +35,8 @@ namespace TestNamespace;
 readonly partial struct SampleValueObject :
     global::TransparentValueObjects.Augments.IValueObject<global::System.String>,
 	global::System.IEquatable<SampleValueObject>,
-	global::System.IEquatable<global::System.String>
+	global::System.IEquatable<global::System.String>,
+	global::System.IComparable<SampleValueObject>
 {
 	public readonly global::System.String Value;
 
@@ -78,6 +79,7 @@ readonly partial struct SampleValueObject :
 	public static explicit operator SampleValueObject(global::System.String value) => From(value);
 	public static explicit operator global::System.String(SampleValueObject value) => value.Value;
 
+    public global::System.Int32 CompareTo(SampleValueObject other) => Value.CompareTo(other);
 }
 """;
 
@@ -288,6 +290,7 @@ public static {{valueObjectTypeName}} NewId() => From(Guid.NewGuid());
     private static string Normalize(string input)
     {
         var sb = new StringBuilder(input);
+        sb.Replace("\r\n", "\n");
         sb.Replace("    ", "\t");
         return sb.ToString().Trim();
     }
