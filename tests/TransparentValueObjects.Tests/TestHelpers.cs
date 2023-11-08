@@ -17,7 +17,6 @@ public static class TestHelpers
         var generated = runResult.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith(fileName));
         generated.Should().NotBeNull();
 
-        var t = generated!.GetText().ToString();
         NormalizeEquals(generated!.GetText().ToString(), expectedOutput);
     }
 
