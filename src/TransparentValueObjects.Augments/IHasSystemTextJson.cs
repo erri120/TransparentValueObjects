@@ -1,3 +1,4 @@
+/*
 namespace TransparentValueObjects.Augments;
 
 public interface IHasSystemTextJson<out TValueObject, out TValue>
@@ -6,3 +7,4 @@ public interface IHasSystemTextJson<out TValueObject, out TValue>
 {
 
 }
+*/

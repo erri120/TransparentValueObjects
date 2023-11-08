@@ -19,7 +19,8 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
     private const string ValueObjectInterfaceName = "IValueObject";
     private const string HasDefaultValueInterfaceName = "IHasDefaultValue";
     private const string HasDefaultEqualityComparerInterfaceName = "IHasDefaultEqualityComparer";
-    private const string HasSystemTextJsonInterfaceName = "IHasSystemTextJson";
+    //private const string HasSystemTextJsonInterfaceName = "IHasSystemTextJson";
+    private const string HasSystemTextJsonConverterInterfaceName = "IHasSystemTextJsonConverter";
 
     private const string AttributeSourceCode =
 $$"""
@@ -92,11 +93,15 @@ namespace {{GeneratedNamespace}}
             var innerValueTypeSymbol = attributeData.AttributeClass?.TypeArguments.FirstOrDefault();
             if (innerValueTypeSymbol is not INamedTypeSymbol innerValueNamedTypeSymbol) continue;
 
-            var innerValueTypeName = $"global::{innerValueNamedTypeSymbol.ContainingNamespace.ToDisplayString()}.{innerValueNamedTypeSymbol.Name}";
+            var innerValueTypeName = innerValueNamedTypeSymbol.ToDisplayString(CustomSymbolDisplayFormats.GlobalFormat);
             var innerValueTypeNullableAnnotation = innerValueNamedTypeSymbol.IsReferenceType ? "?" : "";
 
             var innerValueInterfaces = innerValueNamedTypeSymbol.Interfaces;
             var valueObjectInterfaces = valueObjectNamedTypeSymbol.Interfaces;
+
+            //var hasSystemTextJson = HasAugment(valueObjectInterfaces, HasSystemTextJsonInterfaceName);
+            var hasSystemTextJsonConverter = HasAugment(valueObjectInterfaces, HasSystemTextJsonConverterInterfaceName);
+            var hasSystemTextJsonConverterOverride = valueObjectNamedTypeSymbol.GetMembers("JsonConverterType").Length == 1;
 
             var cw = new CodeWriter();
 
@@ -108,9 +113,15 @@ namespace {{GeneratedNamespace}}
 
             cw.AppendLine("[global::System.Diagnostics.DebuggerDisplay(\"{Value}\")]");
             cw.AppendLine("[global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage(Justification = \"Auto-generated.\")]");
+
+            if (hasSystemTextJsonConverter)
+                cw.AppendLine($"[global::System.Text.Json.Serialization.JsonConverter(typeof({valueObjectTypeName}))]");
+
             cw.AppendLine($"readonly partial struct {valueObjectTypeName} :");
 
             // interfaces
+            //if (hasSystemTextJson && !hasSystemTextJsonConverter)
+            //    cw.AppendLine($"\tglobal::TransparentValueObjects.Augments.IHasSystemTextJsonConverter,");
             cw.AppendLine($"\tglobal::{AugmentedNamespace}.{ValueObjectInterfaceName}<{innerValueTypeName}>,");
             cw.AppendLine($"\tglobal::System.IEquatable<{valueObjectTypeName}>,");
             cw.Append($"\tglobal::System.IEquatable<{innerValueTypeName}>");
@@ -155,9 +166,8 @@ namespace {{GeneratedNamespace}}
                 AddExplicitCastOperators(cw, valueObjectTypeName, innerValueTypeName);
 
                 // System.Text.Json
-                var hasSystemTextJson = HasAugment(valueObjectInterfaces, HasSystemTextJsonInterfaceName);
-                if (hasSystemTextJson)
-                    AddSystemTextJsonClasses(cw, valueObjectTypeName, innerValueTypeName);
+                if (hasSystemTextJsonConverter && !hasSystemTextJsonConverterOverride)
+                    AddSystemTextJsonClasses(cw, valueObjectTypeName, innerValueTypeName, hasDefaultValue);
 
                 if (comparableInterfaceTypeSymbol is not null)
                     ForwardInterface(cw, valueObjectTypeName, comparableInterfaceTypeSymbol);
@@ -339,7 +349,7 @@ namespace {{GeneratedNamespace}}
         {
             return typeSymbol.TypeKind == TypeKind.TypeParameter
                 ? valueObjectTypeName
-                : $"global::{typeSymbol.ContainingNamespace.ToDisplayString()}.{typeSymbol.Name}";
+                : typeSymbol.ToDisplayString(CustomSymbolDisplayFormats.GlobalFormat);
         }
     }
 
@@ -352,35 +362,49 @@ namespace {{GeneratedNamespace}}
         cw.AppendLine();
     }
 
-    public static void AddSystemTextJsonClasses(CodeWriter cw, string valueObjectTypeName, string innerValueTypeName)
+    public static void AddSystemTextJsonClasses(CodeWriter cw, string valueObjectTypeName, string innerValueTypeName, bool hasDefaultValue)
     {
+        cw.AppendLine("public static global::System.Type JsonConverterType => typeof(SystemTextJsonConverter);");
+
         cw.AppendLine($"public class SystemTextJsonConverter : global::System.Text.Json.Serialization.JsonConverter<{valueObjectTypeName}>");
         using (cw.AddBlock())
         {
+            cw.AppendLine($"private static global::System.Text.Json.Serialization.JsonConverter<{innerValueTypeName}> GetInnerValueConverter(global::System.Text.Json.JsonSerializerOptions options)");
+            using (cw.AddBlock())
+            {
+                cw.AppendLine($"var innerValueConverter = options.GetConverter(typeof({innerValueTypeName}));");
+                cw.AppendLine($"if (innerValueConverter is null) throw new global::System.Text.Json.JsonException($\"Unable to find converter for type {{typeof({innerValueTypeName})}}\");");
+                cw.AppendLine($"return (global::System.Text.Json.Serialization.JsonConverter<{innerValueTypeName}>) innerValueConverter;");
+            }
+
             cw.AppendLine($"public override {valueObjectTypeName} Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type typeToConvert, global::System.Text.Json.JsonSerializerOptions options)");
             using (cw.AddBlock())
             {
-                cw.AppendLine($"var valueObject = global::System.Text.Json.JsonSerializer.Deserialize<{innerValueTypeName}>(ref reader, options);");
-                cw.AppendLine($"return {valueObjectTypeName}.From(valueObject);");
+                cw.AppendLine("var innerValueConverter = GetInnerValueConverter(options);");
+                cw.AppendLine($"var innerValue = innerValueConverter.Read(ref reader, typeof({innerValueTypeName}), options);");
+                cw.AppendLine($"return innerValue == default ? {(hasDefaultValue ? "DefaultValue" : $"default({innerValueTypeName})")} : From(innerValue);");
             }
 
             cw.AppendLine($"public override void Write(global::System.Text.Json.Utf8JsonWriter writer, {valueObjectTypeName} value, global::System.Text.Json.JsonSerializerOptions options)");
             using (cw.AddBlock())
             {
-                cw.AppendLine("global::System.Text.Json.JsonSerializer.Serialize(writer, value.Value, options);");
+                cw.AppendLine("var innerValueConverter = GetInnerValueConverter(options);");
+                cw.AppendLine("innerValueConverter.Write(writer, value.Value, options);");
             }
 
             cw.AppendLine($"public override {valueObjectTypeName} ReadAsPropertyName(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type typeToConvert, global::System.Text.Json.JsonSerializerOptions options)");
             using (cw.AddBlock())
             {
-                cw.AppendLine($"var valueObject = global::System.Text.Json.JsonSerializer.Deserialize<{innerValueTypeName}>(ref reader, options);");
-                cw.AppendLine($"return {valueObjectTypeName}.From(valueObject);");
+                cw.AppendLine("var innerValueConverter = GetInnerValueConverter(options);");
+                cw.AppendLine($"var innerValue = innerValueConverter.ReadAsPropertyName(ref reader, typeof({innerValueTypeName}), options);");
+                cw.AppendLine("return From(innerValue);");
             }
 
             cw.AppendLine($"public override void WriteAsPropertyName(global::System.Text.Json.Utf8JsonWriter writer, {valueObjectTypeName} value, global::System.Text.Json.JsonSerializerOptions options)");
             using (cw.AddBlock())
             {
-                cw.AppendLine("writer.WritePropertyName(global::System.Text.Json.JsonSerializer.Serialize(value.Value, options));");
+                cw.AppendLine("var innerValueConverter = GetInnerValueConverter(options);");
+                cw.AppendLine("innerValueConverter.WriteAsPropertyName(writer, value.Value, options);");
             }
         }
     }
