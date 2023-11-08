@@ -98,7 +98,6 @@ namespace {{GeneratedNamespace}}
             var innerValueInterfaces = innerValueNamedTypeSymbol.Interfaces;
             var valueObjectInterfaces = valueObjectNamedTypeSymbol.Interfaces;
 
-            //var hasSystemTextJson = HasAugment(valueObjectInterfaces, HasSystemTextJsonInterfaceName);
             var hasSystemTextJsonConverter = HasAugment(valueObjectInterfaces, HasSystemTextJsonConverterInterfaceName);
             var hasSystemTextJsonConverterOverride = valueObjectNamedTypeSymbol.GetMembers("JsonConverterType").Length == 1;
 
