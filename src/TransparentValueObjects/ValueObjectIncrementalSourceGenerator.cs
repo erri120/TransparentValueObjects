@@ -99,7 +99,7 @@ namespace {{GeneratedNamespace}}
             var valueObjectInterfaces = valueObjectNamedTypeSymbol.Interfaces;
 
             var hasSystemTextJsonConverter = HasAugment(valueObjectInterfaces, HasSystemTextJsonConverterInterfaceName);
-            var hasSystemTextJsonConverterOverride = valueObjectNamedTypeSymbol.GetMembers("JsonConverterType").Length == 1;
+            var hasSystemTextJsonConverterOverride = valueObjectNamedTypeSymbol.GetMembers("SystemTextJsonConverterType").Length == 1;
 
             var cw = new CodeWriter();
 
@@ -360,7 +360,7 @@ namespace {{GeneratedNamespace}}
 
     public static void AddSystemTextJsonClasses(CodeWriter cw, string valueObjectTypeName, string innerValueTypeName, bool hasDefaultValue)
     {
-        cw.AppendLine("public static global::System.Type JsonConverterType => typeof(SystemTextJsonConverter);");
+        cw.AppendLine("public static global::System.Type SystemTextJsonConverterType => typeof(SystemTextJsonConverter);");
 
         cw.AppendLine($"public class SystemTextJsonConverter : global::System.Text.Json.Serialization.JsonConverter<{valueObjectTypeName}>");
         using (cw.AddBlock())

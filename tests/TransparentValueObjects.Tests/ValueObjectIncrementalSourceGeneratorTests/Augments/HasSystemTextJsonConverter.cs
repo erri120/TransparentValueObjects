@@ -72,7 +72,7 @@ readonly partial struct StringValueObject :
 	public static explicit operator StringValueObject(global::System.String value) => From(value);
 	public static explicit operator global::System.String(StringValueObject value) => value.Value;
 
-	public static global::System.Type JsonConverterType => typeof(SystemTextJsonConverter);
+	public static global::System.Type SystemTextJsonConverterType => typeof(SystemTextJsonConverter);
 	public class SystemTextJsonConverter : global::System.Text.Json.Serialization.JsonConverter<StringValueObject>
 	{
 		private static global::System.Text.Json.Serialization.JsonConverter<global::System.String> GetInnerValueConverter(global::System.Text.Json.JsonSerializerOptions options)

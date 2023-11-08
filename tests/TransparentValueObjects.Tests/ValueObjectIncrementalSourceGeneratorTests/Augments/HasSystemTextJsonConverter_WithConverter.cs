@@ -14,7 +14,7 @@ namespace TestNamespace;
 [ValueObject<string>]
 public readonly partial struct StringValueObject : IHasSystemTextJsonConverter
 {
-    public static global::System.Type JsonConverterType => typeof(StringValueObject);
+    public static global::System.Type SystemTextJsonConverterType => typeof(StringValueObject);
 }
 """;
 
