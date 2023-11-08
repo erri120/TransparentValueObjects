@@ -13,5 +13,5 @@ public readonly partial struct SampleValueObjectGuid :
 {
     public static SampleValueObjectGuid DefaultValue => From(Guid.Empty);
     public static IEqualityComparer<Guid> InnerValueDefaultEqualityComparer => EqualityComparer<Guid>.Default;
-    public static Func<Random?, SampleValueObjectGuid> GenerateRandomValue => _ => From(Guid.NewGuid());
+    public static Random GetRandom() => Random.Shared;
 }

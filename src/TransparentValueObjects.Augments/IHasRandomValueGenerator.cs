@@ -1,11 +1,11 @@
 namespace TransparentValueObjects.Augments;
 
-public interface IHasRandomValueGenerator<out TValueObject, out TValue, in TRandom>
+public interface IHasRandomValueGenerator<out TValueObject, out TValue, out TRandom>
     where TValueObject : IValueObject<TValue>
     where TValue : notnull
     where TRandom : Random
 {
-    public static abstract Func<TRandom?, TValueObject> GenerateRandomValue { get; }
+    public static abstract TRandom GetRandom();
 
-    public static abstract TValueObject NewRandomValue(TRandom? random);
+    public static abstract TValueObject NewRandomValue();
 }

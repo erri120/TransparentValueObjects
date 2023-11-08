@@ -13,13 +13,13 @@ public readonly partial struct SampleValueObjectString :
 {
     public static SampleValueObjectString DefaultValue => From("Hello World!");
     public static IEqualityComparer<string> InnerValueDefaultEqualityComparer => StringComparer.OrdinalIgnoreCase;
-    public static Func<Random?, SampleValueObjectString> GenerateRandomValue => random =>
+    public static SampleValueObjectString NewRandomValue()
     {
         const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        return From(string.Create(10, random ?? new Random(), static (span, random) =>
+        return From(string.Create(10, GetRandom(), static (span, random) =>
         {
             for (var i = 0; i < span.Length; i++)
                 span[i] = chars[random.Next(0, chars.Length)];
         }));
-    };
+    }
 }

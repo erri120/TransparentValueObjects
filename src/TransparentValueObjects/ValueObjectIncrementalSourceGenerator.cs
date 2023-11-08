@@ -160,14 +160,19 @@ namespace {{GeneratedNamespace}}
                 {
                     var randomType = randomAugmentTypeSymbol.TypeArguments[2];
                     var randomTypeName = $"global::{randomType.ContainingNamespace.ToDisplayString()}.{randomType.Name}";
-                    AddRandomValueMethod(cw, valueObjectTypeName, randomTypeName);
+                    var hasGetRandomOverride = valueObjectNamedTypeSymbol.GetMembers("GetRandom")
+                        .Any(x => x is IMethodSymbol { ReturnType: var ret, Parameters.Length: 0 } && SymbolEqualityComparer.Default.Equals(ret, randomType));
+                    var hasNewRandomValueOverride = valueObjectNamedTypeSymbol.GetMembers("NewRandomValue")
+                        .Any(x => x is IMethodSymbol { ReturnType: var ret, Parameters.Length: 0 } && SymbolEqualityComparer.IncludeNullability.Equals(ret, valueObjectNamedTypeSymbol));
+                    AddRandomValueMethod(cw, valueObjectTypeName, randomTypeName, hasGetRandomOverride, hasNewRandomValueOverride);
                 }
                 if (GetAugment(valueObjectInterfaces, HasUnmanagedRandomValueGeneratorInterfaceName) is { TypeArguments.Length: 3 } uRandomAugmentTypeSymbol)
                 {
                     var randomType = uRandomAugmentTypeSymbol.TypeArguments[2];
                     var randomTypeName = $"global::{randomType.ContainingNamespace.ToDisplayString()}.{randomType.Name}";
-                    AddRandomValueMethod(cw, valueObjectTypeName, randomTypeName);
-                    AddUnmanagedRandomValueMethod(cw, valueObjectTypeName, innerValueTypeName, randomTypeName);
+                    var hasGetRandomOverride = valueObjectNamedTypeSymbol.GetMembers("GetRandom")
+                        .Any(x => x is IMethodSymbol { ReturnType: var ret, Parameters.Length: 0 } && SymbolEqualityComparer.Default.Equals(ret, randomType));
+                    AddUnmanagedRandomValueMethod(cw, valueObjectTypeName, innerValueTypeName, randomTypeName, hasGetRandomOverride);
                 }
 
                 if (comparableInterfaceTypeSymbol is not null)
@@ -368,13 +373,26 @@ namespace {{GeneratedNamespace}}
         cw.AppendLine();
     }
 
-    public static void AddRandomValueMethod(CodeWriter cw, string valueObjectTypeName, string randomTypeName)
+    public static void AddRandomValueMethod(
+        CodeWriter cw,
+        string valueObjectTypeName,
+        string randomTypeName,
+        bool hasGetRandomOverride,
+        bool hasNewRandomValueOverride)
     {
-        cw.AppendLine($"public static {valueObjectTypeName} NewRandomValue({randomTypeName}? random)");
-        using (cw.AddBlock())
+        if (!hasGetRandomOverride)
         {
-            cw.AppendLine("var randomValue = GenerateRandomValue(random);");
-            cw.AppendLine("return randomValue;");
+            cw.AppendLine($"public static {randomTypeName} GetRandom() => new {randomTypeName}();");
+        }
+
+        if (!hasNewRandomValueOverride)
+        {
+            cw.AppendLine($"public static {valueObjectTypeName} NewRandomValue()");
+            using (cw.AddBlock())
+            {
+                cw.AppendLine("var randomValue = GenerateRandomValue(GetRandom());");
+                cw.AppendLine("return randomValue;");
+            }
         }
     }
 
@@ -382,19 +400,24 @@ namespace {{GeneratedNamespace}}
         CodeWriter cw,
         string valueObjectTypeName,
         string innerValueTypeName,
-        string randomTypeName)
+        string randomTypeName,
+        bool hasGetRandomOverride)
     {
-        cw.AppendLine($"public static global::System.Func<{randomTypeName}?, {valueObjectTypeName}> GenerateRandomValue => random =>");
+        if (!hasGetRandomOverride)
+        {
+            cw.AppendLine($"public static {randomTypeName} GetRandom() => new {randomTypeName}();");
+        }
+
+        cw.AppendLine($"public static {valueObjectTypeName} NewRandomValue()");
         using (cw.AddBlock())
         {
-            cw.AppendLine($"random ??= new {randomTypeName}();");
+            cw.AppendLine("var random = GetRandom();");
             cw.AppendLine($"var size = global::System.Runtime.CompilerServices.Unsafe.SizeOf<{innerValueTypeName}>();");
             cw.AppendLine("global::System.Span<byte> bytes = stackalloc byte[size];");
             cw.AppendLine("random.NextBytes(bytes);");
             cw.AppendLine($"var id = global::System.Runtime.InteropServices.MemoryMarshal.Cast<byte, {innerValueTypeName}>(bytes)[0];");
             cw.AppendLine($"return {valueObjectTypeName}.From(id);");
         }
-        cw.Append(";");
     }
 
     private readonly struct Target : IEquatable<Target>
