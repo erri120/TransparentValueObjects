@@ -12,7 +12,7 @@ public sealed class TransparentValueObjectSchemaFilter : ISchemaFilter
         if (context.Type.GetInterfaces().FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IValueObject<>)) is not { } valueObject)
             return;
 
-        if (valueObject.GetGenericArguments() is not [_, { } innerValue])
+        if (valueObject.GetGenericArguments() is not [{ } innerValue])
             return;
 
         var schemaValueObject = context.SchemaGenerator.GenerateSchema(innerValue, context.SchemaRepository, context.MemberInfo, context.ParameterInfo);
