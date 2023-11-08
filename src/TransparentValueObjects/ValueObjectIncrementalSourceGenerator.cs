@@ -157,7 +157,7 @@ namespace {{GeneratedNamespace}}
                 // EF Core
                 var hasEfCore = HasAugment(valueObjectInterfaces, HasEfCoreInterfaceName);
                 if (hasEfCore)
-                    AddEFCoreClasses(cw, valueObjectTypeName, innerValueTypeName);
+                    AddEfCoreClasses(cw, valueObjectTypeName, innerValueTypeName);
 
                 if (comparableInterfaceTypeSymbol is not null)
                     ForwardInterface(cw, valueObjectTypeName, comparableInterfaceTypeSymbol);
@@ -352,7 +352,7 @@ namespace {{GeneratedNamespace}}
         cw.AppendLine();
     }
 
-    public static void AddEFCoreClasses(CodeWriter cw, string valueObjectTypeName, string innerValueTypeName)
+    public static void AddEfCoreClasses(CodeWriter cw, string valueObjectTypeName, string innerValueTypeName)
     {
         cw.AppendLine($"public class EfCoreValueConverter : global::Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<{valueObjectTypeName}, {innerValueTypeName}>");
         using (cw.AddBlock())
