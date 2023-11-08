@@ -88,6 +88,12 @@ readonly partial struct StringValueObject :
 
 	public global::System.Int32 CompareTo(StringValueObject other) => Value.CompareTo(other);
 }
+
+public static class StringValueObjectEfCoreExtensions
+{
+	public static global::Microsoft.EntityFrameworkCore.Metadata.Builders.PropertyBuilder<StringValueObject> HasTransparentValueObjectConversion(this global::Microsoft.EntityFrameworkCore.Metadata.Builders.PropertyBuilder<StringValueObject> propertyBuilder) =>
+	propertyBuilder.HasConversion<StringValueObject.EfCoreValueConverter, StringValueObject.EfCoreValueComparer>();
+}
 """;
 
     [Fact]

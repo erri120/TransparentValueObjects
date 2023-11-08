@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
@@ -61,7 +62,7 @@ namespace {{GeneratedNamespace}}
     private static Target Transform(GeneratorSyntaxContext context, CancellationToken cancellationToken)
     {
         var syntaxNode = (StructDeclarationSyntax) context.Node;
-        var symbol = context.SemanticModel.GetDeclaredSymbol(syntaxNode, cancellationToken);
+        var symbol = ModelExtensions.GetDeclaredSymbol(context.SemanticModel, syntaxNode, cancellationToken);
 
         if (symbol is null) return default;
 
@@ -82,7 +83,7 @@ namespace {{GeneratedNamespace}}
             var attributeData = target.AttributeData;
 
             var semanticModel = compilation.GetSemanticModel(valueObjectDeclarationSyntax.SyntaxTree);
-            var valueObjectTypeSymbol = semanticModel.GetDeclaredSymbol(valueObjectDeclarationSyntax);
+            var valueObjectTypeSymbol = ModelExtensions.GetDeclaredSymbol(semanticModel, valueObjectDeclarationSyntax);
 
             if (valueObjectTypeSymbol is not INamedTypeSymbol valueObjectNamedTypeSymbol) continue;
 
@@ -97,6 +98,8 @@ namespace {{GeneratedNamespace}}
 
             var innerValueInterfaces = innerValueNamedTypeSymbol.Interfaces;
             var valueObjectInterfaces = valueObjectNamedTypeSymbol.Interfaces;
+
+            var hasEfCore = HasAugment(valueObjectInterfaces, HasEfCoreInterfaceName);
 
             var cw = new CodeWriter();
 
@@ -155,7 +158,6 @@ namespace {{GeneratedNamespace}}
                 AddExplicitCastOperators(cw, valueObjectTypeName, innerValueTypeName);
 
                 // EF Core
-                var hasEfCore = HasAugment(valueObjectInterfaces, HasEfCoreInterfaceName);
                 if (hasEfCore)
                     AddEfCoreClasses(cw, valueObjectTypeName, innerValueTypeName);
 
@@ -165,6 +167,9 @@ namespace {{GeneratedNamespace}}
                 if (innerValueTypeName == "global::System.Guid")
                     AddGuidSpecificCode(cw, valueObjectTypeName, innerValueTypeName);
             }
+
+            if (hasEfCore)
+                AddEfCoreExtensions(cw, valueObjectTypeName, SyntaxFacts.GetText(valueObjectTypeSymbol.DeclaredAccessibility));
 
             context.AddSource($"{valueObjectTypeName}.g.cs", SourceText.From(cw.ToString(), Encoding.UTF8));
         }
@@ -369,6 +374,16 @@ namespace {{GeneratedNamespace}}
             cw.AppendLine("public EfCoreValueComparer() : base((left, right) => right.Equals(left), value => value.GetHashCode(), value => From(value.Value)) { }");
             cw.AppendLine($"public override int GetHashCode({valueObjectTypeName} value) => value.GetHashCode();");
             cw.AppendLine($"public override bool Equals({valueObjectTypeName} left, {valueObjectTypeName} right) => right.Equals(left);");
+        }
+    }
+
+    public static void AddEfCoreExtensions(CodeWriter cw, string valueObjectTypeName, string accessibility)
+    {
+        cw.AppendLine($"{accessibility} static class {valueObjectTypeName}EfCoreExtensions");
+        using (cw.AddBlock())
+        {
+            cw.AppendLine($"public static global::Microsoft.EntityFrameworkCore.Metadata.Builders.PropertyBuilder<{valueObjectTypeName}> HasTransparentValueObjectConversion(this global::Microsoft.EntityFrameworkCore.Metadata.Builders.PropertyBuilder<{valueObjectTypeName}> propertyBuilder) =>");
+            cw.AppendLine($"propertyBuilder.HasConversion<{valueObjectTypeName}.EfCoreValueConverter, {valueObjectTypeName}.EfCoreValueComparer>();");
         }
     }
 
