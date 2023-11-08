@@ -93,7 +93,7 @@ namespace {{GeneratedNamespace}}
             var innerValueTypeSymbol = attributeData.AttributeClass?.TypeArguments.FirstOrDefault();
             if (innerValueTypeSymbol is not INamedTypeSymbol innerValueNamedTypeSymbol) continue;
 
-            var innerValueTypeName = $"global::{innerValueNamedTypeSymbol.ContainingNamespace.ToDisplayString()}.{innerValueNamedTypeSymbol.Name}";
+            var innerValueTypeName = innerValueNamedTypeSymbol.ToDisplayString(CustomSymbolDisplayFormats.GlobalFormat);
             var innerValueTypeNullableAnnotation = innerValueNamedTypeSymbol.IsReferenceType ? "?" : "";
 
             var innerValueInterfaces = innerValueNamedTypeSymbol.Interfaces;
@@ -355,7 +355,7 @@ namespace {{GeneratedNamespace}}
         {
             return typeSymbol.TypeKind == TypeKind.TypeParameter
                 ? valueObjectTypeName
-                : $"global::{typeSymbol.ContainingNamespace.ToDisplayString()}.{typeSymbol.Name}";
+                : typeSymbol.ToDisplayString(CustomSymbolDisplayFormats.GlobalFormat);
         }
     }
 
