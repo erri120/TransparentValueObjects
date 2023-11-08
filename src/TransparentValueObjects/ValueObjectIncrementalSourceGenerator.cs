@@ -19,7 +19,6 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
     private const string ValueObjectInterfaceName = "IValueObject";
     private const string HasDefaultValueInterfaceName = "IHasDefaultValue";
     private const string HasDefaultEqualityComparerInterfaceName = "IHasDefaultEqualityComparer";
-    //private const string HasSystemTextJsonInterfaceName = "IHasSystemTextJson";
     private const string HasSystemTextJsonConverterInterfaceName = "IHasSystemTextJsonConverter";
 
     private const string AttributeSourceCode =
@@ -120,8 +119,6 @@ namespace {{GeneratedNamespace}}
             cw.AppendLine($"readonly partial struct {valueObjectTypeName} :");
 
             // interfaces
-            //if (hasSystemTextJson && !hasSystemTextJsonConverter)
-            //    cw.AppendLine($"\tglobal::TransparentValueObjects.Augments.IHasSystemTextJsonConverter,");
             cw.AppendLine($"\tglobal::{AugmentedNamespace}.{ValueObjectInterfaceName}<{innerValueTypeName}>,");
             cw.AppendLine($"\tglobal::System.IEquatable<{valueObjectTypeName}>,");
             cw.Append($"\tglobal::System.IEquatable<{innerValueTypeName}>");
