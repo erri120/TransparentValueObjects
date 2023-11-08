@@ -76,6 +76,8 @@ namespace {{GeneratedNamespace}}
 
     private static void Generate(SourceProductionContext context, Compilation compilation, ImmutableArray<Target> targets)
     {
+        if (compilation.GetTypeByMetadataName(typeof(Type).FullName!) is not { } typeSymbol) return;
+
         foreach (var target in targets)
         {
             var valueObjectDeclarationSyntax = target.Syntax;
@@ -99,7 +101,8 @@ namespace {{GeneratedNamespace}}
             var valueObjectInterfaces = valueObjectNamedTypeSymbol.Interfaces;
 
             var hasSystemTextJsonConverter = HasAugment(valueObjectInterfaces, HasSystemTextJsonConverterInterfaceName);
-            var hasSystemTextJsonConverterOverride = valueObjectNamedTypeSymbol.GetMembers("SystemTextJsonConverterType").Length == 1;
+            var hasSystemTextJsonConverterOverride = valueObjectNamedTypeSymbol.GetMembers("SystemTextJsonConverterType")
+                .Any(x => x is IPropertySymbol { Type: var ret } && SymbolEqualityComparer.Default.Equals(ret, typeSymbol));
 
             var cw = new CodeWriter();
 
