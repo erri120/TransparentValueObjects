@@ -6,13 +6,13 @@
         <RootNamespace>TransparentValueObjects.Sample</RootNamespace>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    </PropertyGroup>
+
     <ItemGroup>
         <ProjectReference Include="..\TransparentValueObjects.Augments\TransparentValueObjects.Augments.csproj" />
         <ProjectReference Include="..\TransparentValueObjects\TransparentValueObjects.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Remove="DDD.UbiquitousLanguageRegistry.txt"/>
     </ItemGroup>
 
 </Project>
