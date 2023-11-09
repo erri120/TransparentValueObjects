@@ -1,3 +1,5 @@
+using System;
+
 namespace TransparentValueObjects.Augments;
 
 public interface IHasSystemTextJsonConverter

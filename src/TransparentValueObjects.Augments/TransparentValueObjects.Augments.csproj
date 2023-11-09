@@ -1,13 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
+    <!-- NuGet Package Shared Details -->
+    <Import Project="$([MSBuild]::GetPathOfFileAbove('NuGet.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
+        <RootNamespace>TransparentValueObjects.Augments</RootNamespace>
+        <PackageId>TransparentValueObjects.Augments</PackageId>
     </PropertyGroup>
 
     <ItemGroup>
         <InternalsVisibleTo Include="TransparentValueObjects.Tests" />
     </ItemGroup>
+
 
 </Project>
