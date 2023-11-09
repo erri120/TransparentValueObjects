@@ -8,7 +8,13 @@
 
     <PropertyGroup>
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+        <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
     </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
+        <Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
+    </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\TransparentValueObjects.Augments\TransparentValueObjects.Augments.csproj" />
