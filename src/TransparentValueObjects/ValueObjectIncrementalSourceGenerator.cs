@@ -63,7 +63,7 @@ namespace {{GeneratedNamespace}}
     private static Target Transform(GeneratorSyntaxContext context, CancellationToken cancellationToken)
     {
         var syntaxNode = (StructDeclarationSyntax) context.Node;
-        var symbol = ModelExtensions.GetDeclaredSymbol(context.SemanticModel, syntaxNode, cancellationToken);
+        var symbol = context.SemanticModel.GetDeclaredSymbol(syntaxNode, cancellationToken);
 
         if (symbol is null) return default;
 
