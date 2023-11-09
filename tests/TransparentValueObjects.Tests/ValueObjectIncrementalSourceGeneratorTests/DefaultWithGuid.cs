@@ -68,7 +68,22 @@ readonly partial struct GuidValueObject :
 	public static explicit operator GuidValueObject(global::System.Guid value) => From(value);
 	public static explicit operator global::System.Guid(GuidValueObject value) => value.Value;
 
-	public global::System.Int32 CompareTo(GuidValueObject other) => Value.CompareTo(other);
+    public global::System.Int32 CompareTo(GuidValueObject other) => Value.CompareTo(other);
+    public static bool operator <(GuidValueObject left, GuidValueObject right) => left.Value.CompareTo(right.Value) < 0;
+    public static bool operator >(GuidValueObject left, GuidValueObject right) => left.Value.CompareTo(right.Value) > 0;
+    public static bool operator <=(GuidValueObject left, GuidValueObject right) => left.Value.CompareTo(right.Value) <= 0;
+    public static bool operator >=(GuidValueObject left, GuidValueObject right) => left.Value.CompareTo(right.Value) >= 0;
+
+    public static bool operator <(global::System.Guid left, GuidValueObject right) => left.CompareTo(right.Value) < 0;
+    public static bool operator >(global::System.Guid left, GuidValueObject right) => left.CompareTo(right.Value) > 0;
+    public static bool operator <=(global::System.Guid left, GuidValueObject right) => left.CompareTo(right.Value) <= 0;
+    public static bool operator >=(global::System.Guid left, GuidValueObject right) => left.CompareTo(right.Value) >= 0;
+
+    public static bool operator <(GuidValueObject left, global::System.Guid right) => left.Value.CompareTo(right) < 0;
+    public static bool operator >(GuidValueObject left, global::System.Guid right) => left.Value.CompareTo(right) > 0;
+    public static bool operator <=(GuidValueObject left, global::System.Guid right) => left.Value.CompareTo(right) <= 0;
+    public static bool operator >=(GuidValueObject left, global::System.Guid right) => left.Value.CompareTo(right) >= 0;
+
 	public static GuidValueObject NewId() => From(global::System.Guid.NewGuid());
 
 }

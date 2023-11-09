@@ -74,6 +74,21 @@ readonly partial struct StringValueObject :
 	public static explicit operator global::System.String(StringValueObject value) => value.Value;
 
 	public global::System.Int32 CompareTo(StringValueObject other) => Value.CompareTo(other);
+	public static bool operator <(StringValueObject left, StringValueObject right) => left.Value.CompareTo(right.Value) < 0;
+	public static bool operator >(StringValueObject left, StringValueObject right) => left.Value.CompareTo(right.Value) > 0;
+	public static bool operator <=(StringValueObject left, StringValueObject right) => left.Value.CompareTo(right.Value) <= 0;
+	public static bool operator >=(StringValueObject left, StringValueObject right) => left.Value.CompareTo(right.Value) >= 0;
+
+	public static bool operator <(global::System.String left, StringValueObject right) => left.CompareTo(right.Value) < 0;
+	public static bool operator >(global::System.String left, StringValueObject right) => left.CompareTo(right.Value) > 0;
+	public static bool operator <=(global::System.String left, StringValueObject right) => left.CompareTo(right.Value) <= 0;
+	public static bool operator >=(global::System.String left, StringValueObject right) => left.CompareTo(right.Value) >= 0;
+
+	public static bool operator <(StringValueObject left, global::System.String right) => left.Value.CompareTo(right) < 0;
+	public static bool operator >(StringValueObject left, global::System.String right) => left.Value.CompareTo(right) > 0;
+	public static bool operator <=(StringValueObject left, global::System.String right) => left.Value.CompareTo(right) <= 0;
+	public static bool operator >=(StringValueObject left, global::System.String right) => left.Value.CompareTo(right) >= 0;
+
 }
 """;
 

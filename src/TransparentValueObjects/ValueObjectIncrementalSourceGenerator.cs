@@ -170,7 +170,10 @@ namespace {{GeneratedNamespace}}
                     AddSystemTextJsonClasses(cw, valueObjectTypeName, innerValueTypeName, hasDefaultValue);
 
                 if (comparableInterfaceTypeSymbol is not null)
+                {
                     ForwardInterface(cw, valueObjectTypeName, comparableInterfaceTypeSymbol);
+                    AddComparisonOperators(cw, valueObjectTypeName, innerValueTypeName);
+                }
 
                 if (string.Equals(innerValueTypeName, "global::System.Guid", StringComparison.Ordinal))
                     AddGuidSpecificCode(cw, valueObjectTypeName, innerValueTypeName);
@@ -302,6 +305,30 @@ namespace {{GeneratedNamespace}}
     {
         cw.AppendLine($"public static explicit operator {valueObjectTypeName}({innerValueTypeName} value) => From(value);");
         cw.AppendLine($"public static explicit operator {innerValueTypeName}({valueObjectTypeName} value) => value.Value;");
+        cw.AppendLine();
+    }
+
+    public static void AddComparisonOperators(
+        CodeWriter cw,
+        string valueObjectTypeName,
+        string innerValueTypeName)
+    {
+        cw.AppendLine($"public static bool operator <({valueObjectTypeName} left, {valueObjectTypeName} right) => left.Value.CompareTo(right.Value) < 0;");
+        cw.AppendLine($"public static bool operator >({valueObjectTypeName} left, {valueObjectTypeName} right) => left.Value.CompareTo(right.Value) > 0;");
+        cw.AppendLine($"public static bool operator <=({valueObjectTypeName} left, {valueObjectTypeName} right) => left.Value.CompareTo(right.Value) <= 0;");
+        cw.AppendLine($"public static bool operator >=({valueObjectTypeName} left, {valueObjectTypeName} right) => left.Value.CompareTo(right.Value) >= 0;");
+        cw.AppendLine();
+
+        cw.AppendLine($"public static bool operator <({innerValueTypeName} left, {valueObjectTypeName} right) => left.CompareTo(right.Value) < 0;");
+        cw.AppendLine($"public static bool operator >({innerValueTypeName} left, {valueObjectTypeName} right) => left.CompareTo(right.Value) > 0;");
+        cw.AppendLine($"public static bool operator <=({innerValueTypeName} left, {valueObjectTypeName} right) => left.CompareTo(right.Value) <= 0;");
+        cw.AppendLine($"public static bool operator >=({innerValueTypeName} left, {valueObjectTypeName} right) => left.CompareTo(right.Value) >= 0;");
+        cw.AppendLine();
+
+        cw.AppendLine($"public static bool operator <({valueObjectTypeName} left, {innerValueTypeName} right) => left.Value.CompareTo(right) < 0;");
+        cw.AppendLine($"public static bool operator >({valueObjectTypeName} left, {innerValueTypeName} right) => left.Value.CompareTo(right) > 0;");
+        cw.AppendLine($"public static bool operator <=({valueObjectTypeName} left, {innerValueTypeName} right) => left.Value.CompareTo(right) <= 0;");
+        cw.AppendLine($"public static bool operator >=({valueObjectTypeName} left, {innerValueTypeName} right) => left.Value.CompareTo(right) >= 0;");
         cw.AppendLine();
     }
 
