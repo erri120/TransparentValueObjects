@@ -19,6 +19,7 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
     private const string ValueObjectInterfaceName = "IValueObject";
     private const string HasDefaultValueInterfaceName = "IHasDefaultValue";
     private const string HasDefaultEqualityComparerInterfaceName = "IHasDefaultEqualityComparer";
+    private const string HasSystemTextJsonConverterInterfaceName = "IHasSystemTextJsonConverter";
     private const string HasRandomValueGeneratorInterfaceName = "IHasRandomValueGenerator";
     private const string HasUnmanagedRandomValueGeneratorInterfaceName = "IHasUnmanagedRandomValueGenerator";
 
@@ -69,7 +70,7 @@ namespace {{GeneratedNamespace}}
         var attributes = symbol.GetAttributes();
         if (attributes.Length == 0) return default;
 
-        var attributeData = attributes.FirstOrDefault(static a => a?.AttributeClass?.Name == $"{AttributeClassName}");
+        var attributeData = attributes.FirstOrDefault(static a => string.Equals(a?.AttributeClass?.Name, $"{AttributeClassName}", StringComparison.Ordinal));
         if (attributeData is null) return default;
 
         return new Target(syntaxNode, attributeData);
@@ -77,13 +78,15 @@ namespace {{GeneratedNamespace}}
 
     private static void Generate(SourceProductionContext context, Compilation compilation, ImmutableArray<Target> targets)
     {
+        if (compilation.GetTypeByMetadataName(typeof(Type).FullName!) is not { } typeSymbol) return;
+
         foreach (var target in targets)
         {
             var valueObjectDeclarationSyntax = target.Syntax;
             var attributeData = target.AttributeData;
 
             var semanticModel = compilation.GetSemanticModel(valueObjectDeclarationSyntax.SyntaxTree);
-            var valueObjectTypeSymbol = semanticModel.GetDeclaredSymbol(valueObjectDeclarationSyntax);
+            var valueObjectTypeSymbol = semanticModel.GetDeclaredSymbol(valueObjectDeclarationSyntax, cancellationToken: context.CancellationToken);
 
             if (valueObjectTypeSymbol is not INamedTypeSymbol valueObjectNamedTypeSymbol) continue;
 
@@ -99,6 +102,10 @@ namespace {{GeneratedNamespace}}
             var innerValueInterfaces = innerValueNamedTypeSymbol.Interfaces;
             var valueObjectInterfaces = valueObjectNamedTypeSymbol.Interfaces;
 
+            var hasSystemTextJsonConverter = HasAugment(valueObjectInterfaces, HasSystemTextJsonConverterInterfaceName);
+            var hasSystemTextJsonConverterOverride = valueObjectNamedTypeSymbol.GetMembers("SystemTextJsonConverterType")
+                .Any(x => x is IPropertySymbol { Type: var ret } && SymbolEqualityComparer.Default.Equals(ret, typeSymbol));
+
             var cw = new CodeWriter();
 
             // header, namespace and type definition
@@ -109,6 +116,11 @@ namespace {{GeneratedNamespace}}
 
             cw.AppendLine("[global::System.Diagnostics.DebuggerDisplay(\"{Value}\")]");
             cw.AppendLine("[global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage(Justification = \"Auto-generated.\")]");
+
+            // TODO: use override
+            if (hasSystemTextJsonConverter)
+                cw.AppendLine("[global::System.Text.Json.Serialization.JsonConverter(typeof(SystemTextJsonConverter))]");
+
             cw.AppendLine($"readonly partial struct {valueObjectTypeName} :");
 
             // interfaces
@@ -129,6 +141,10 @@ namespace {{GeneratedNamespace}}
             {
                 // backing field
                 cw.AppendLine($"public readonly {innerValueTypeName} Value;");
+                cw.AppendLine();
+
+                // IValueObject implementation
+                cw.AppendLine($"public static global::System.Type InnerValueType => typeof({innerValueTypeName});");
                 cw.AppendLine();
 
                 // public default constructor
@@ -155,6 +171,10 @@ namespace {{GeneratedNamespace}}
                 // explicit cast operators
                 AddExplicitCastOperators(cw, valueObjectTypeName, innerValueTypeName);
 
+                // System.Text.Json
+                if (hasSystemTextJsonConverter && !hasSystemTextJsonConverterOverride)
+                    AddSystemTextJsonClasses(cw, valueObjectTypeName, innerValueTypeName, hasDefaultValue);
+
                 // The NewRandomValue
                 if (GetAugment(valueObjectInterfaces, HasRandomValueGeneratorInterfaceName) is { TypeArguments.Length: 3 } randomAugmentTypeSymbol)
                 {
@@ -162,9 +182,7 @@ namespace {{GeneratedNamespace}}
                     var randomTypeName = $"global::{randomType.ContainingNamespace.ToDisplayString()}.{randomType.Name}";
                     var hasGetRandomOverride = valueObjectNamedTypeSymbol.GetMembers("GetRandom")
                         .Any(x => x is IMethodSymbol { ReturnType: var ret, Parameters.Length: 0 } && SymbolEqualityComparer.Default.Equals(ret, randomType));
-                    var hasNewRandomValueOverride = valueObjectNamedTypeSymbol.GetMembers("NewRandomValue")
-                        .Any(x => x is IMethodSymbol { ReturnType: var ret, Parameters.Length: 0 } && SymbolEqualityComparer.IncludeNullability.Equals(ret, valueObjectNamedTypeSymbol));
-                    AddRandomValueMethod(cw, valueObjectTypeName, randomTypeName, hasGetRandomOverride, hasNewRandomValueOverride);
+                    AddRandomValueMethod(cw, randomTypeName, hasGetRandomOverride);
                 }
                 if (GetAugment(valueObjectInterfaces, HasUnmanagedRandomValueGeneratorInterfaceName) is { TypeArguments.Length: 3 } uRandomAugmentTypeSymbol)
                 {
@@ -176,9 +194,12 @@ namespace {{GeneratedNamespace}}
                 }
 
                 if (comparableInterfaceTypeSymbol is not null)
+                {
                     ForwardInterface(cw, valueObjectTypeName, comparableInterfaceTypeSymbol);
+                    AddComparisonOperators(cw, valueObjectTypeName, innerValueTypeName);
+                }
 
-                if (innerValueTypeName == "global::System.Guid")
+                if (string.Equals(innerValueTypeName, "global::System.Guid", StringComparison.Ordinal))
                     AddGuidSpecificCode(cw, valueObjectTypeName, innerValueTypeName);
             }
 
@@ -193,10 +214,9 @@ namespace {{GeneratedNamespace}}
     {
         var typeNameWithoutType = interfaceType.Name.Substring(0, interfaceType.Name.IndexOf('`'));
         return interfaces.FirstOrDefault(
-            namedSymbol => namedSymbol.ContainingNamespace.Name == interfaceType.Namespace &&
-                           namedSymbol.Name == typeNameWithoutType &&
-                           namedSymbol.TypeArguments.Length == 1 &&
-                           namedSymbol.TypeArguments[0].Name == innerValueTypeSymbol.Name
+            namedSymbol => string.Equals(namedSymbol.ContainingNamespace.Name, interfaceType.Namespace, StringComparison.Ordinal) &&
+                           string.Equals(namedSymbol.Name, typeNameWithoutType, StringComparison.Ordinal) && namedSymbol.TypeArguments.Length == 1 &&
+                           string.Equals(namedSymbol.TypeArguments[0].Name, innerValueTypeSymbol.Name, StringComparison.Ordinal)
         );
     }
 
@@ -207,7 +227,10 @@ namespace {{GeneratedNamespace}}
 
     private static bool HasAugment(ImmutableArray<INamedTypeSymbol> existingInterfaces, string augmentName)
     {
-        return existingInterfaces.Any(x => x.Name == augmentName && x.ContainingNamespace.ToDisplayString() == AugmentedNamespace);
+        return existingInterfaces.Any(x =>
+            string.Equals(x.Name, augmentName, StringComparison.Ordinal) &&
+            string.Equals(x.ContainingNamespace.ToDisplayString(), AugmentedNamespace, StringComparison.Ordinal)
+        );
     }
 
     public static void AddPublicConstructor(CodeWriter cw, string valueObjectTypeName, bool hasDefaultValue)
@@ -314,6 +337,30 @@ namespace {{GeneratedNamespace}}
         cw.AppendLine();
     }
 
+    public static void AddComparisonOperators(
+        CodeWriter cw,
+        string valueObjectTypeName,
+        string innerValueTypeName)
+    {
+        cw.AppendLine($"public static bool operator <({valueObjectTypeName} left, {valueObjectTypeName} right) => left.Value.CompareTo(right.Value) < 0;");
+        cw.AppendLine($"public static bool operator >({valueObjectTypeName} left, {valueObjectTypeName} right) => left.Value.CompareTo(right.Value) > 0;");
+        cw.AppendLine($"public static bool operator <=({valueObjectTypeName} left, {valueObjectTypeName} right) => left.Value.CompareTo(right.Value) <= 0;");
+        cw.AppendLine($"public static bool operator >=({valueObjectTypeName} left, {valueObjectTypeName} right) => left.Value.CompareTo(right.Value) >= 0;");
+        cw.AppendLine();
+
+        cw.AppendLine($"public static bool operator <({innerValueTypeName} left, {valueObjectTypeName} right) => left.CompareTo(right.Value) < 0;");
+        cw.AppendLine($"public static bool operator >({innerValueTypeName} left, {valueObjectTypeName} right) => left.CompareTo(right.Value) > 0;");
+        cw.AppendLine($"public static bool operator <=({innerValueTypeName} left, {valueObjectTypeName} right) => left.CompareTo(right.Value) <= 0;");
+        cw.AppendLine($"public static bool operator >=({innerValueTypeName} left, {valueObjectTypeName} right) => left.CompareTo(right.Value) >= 0;");
+        cw.AppendLine();
+
+        cw.AppendLine($"public static bool operator <({valueObjectTypeName} left, {innerValueTypeName} right) => left.Value.CompareTo(right) < 0;");
+        cw.AppendLine($"public static bool operator >({valueObjectTypeName} left, {innerValueTypeName} right) => left.Value.CompareTo(right) > 0;");
+        cw.AppendLine($"public static bool operator <=({valueObjectTypeName} left, {innerValueTypeName} right) => left.Value.CompareTo(right) <= 0;");
+        cw.AppendLine($"public static bool operator >=({valueObjectTypeName} left, {innerValueTypeName} right) => left.Value.CompareTo(right) >= 0;");
+        cw.AppendLine();
+    }
+
     private static void ForwardInterface(
         CodeWriter cw,
         string valueObjectTypeName,
@@ -373,26 +420,61 @@ namespace {{GeneratedNamespace}}
         cw.AppendLine();
     }
 
+        public static void AddSystemTextJsonClasses(CodeWriter cw, string valueObjectTypeName, string innerValueTypeName, bool hasDefaultValue)
+    {
+        cw.AppendLine("public static global::System.Type SystemTextJsonConverterType => typeof(SystemTextJsonConverter);");
+
+        cw.AppendLine($"public class SystemTextJsonConverter : global::System.Text.Json.Serialization.JsonConverter<{valueObjectTypeName}>");
+        using (cw.AddBlock())
+        {
+            cw.AppendLine($"private static global::System.Text.Json.Serialization.JsonConverter<{innerValueTypeName}> GetInnerValueConverter(global::System.Text.Json.JsonSerializerOptions options)");
+            using (cw.AddBlock())
+            {
+                cw.AppendLine($"var innerValueConverter = options.GetConverter(typeof({innerValueTypeName}));");
+                cw.AppendLine($"if (innerValueConverter is null) throw new global::System.Text.Json.JsonException($\"Unable to find converter for type {{typeof({innerValueTypeName})}}\");");
+                cw.AppendLine($"return (global::System.Text.Json.Serialization.JsonConverter<{innerValueTypeName}>) innerValueConverter;");
+            }
+
+            cw.AppendLine($"public override {valueObjectTypeName} Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type typeToConvert, global::System.Text.Json.JsonSerializerOptions options)");
+            using (cw.AddBlock())
+            {
+                cw.AppendLine("var innerValueConverter = GetInnerValueConverter(options);");
+                cw.AppendLine($"var innerValue = innerValueConverter.Read(ref reader, typeof({innerValueTypeName}), options);");
+                cw.AppendLine($"return innerValue == default ? {(hasDefaultValue ? "DefaultValue" : $"default({innerValueTypeName})")} : From(innerValue);");
+            }
+
+            cw.AppendLine($"public override void Write(global::System.Text.Json.Utf8JsonWriter writer, {valueObjectTypeName} value, global::System.Text.Json.JsonSerializerOptions options)");
+            using (cw.AddBlock())
+            {
+                cw.AppendLine("var innerValueConverter = GetInnerValueConverter(options);");
+                cw.AppendLine("innerValueConverter.Write(writer, value.Value, options);");
+            }
+
+            cw.AppendLine($"public override {valueObjectTypeName} ReadAsPropertyName(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type typeToConvert, global::System.Text.Json.JsonSerializerOptions options)");
+            using (cw.AddBlock())
+            {
+                cw.AppendLine("var innerValueConverter = GetInnerValueConverter(options);");
+                cw.AppendLine($"var innerValue = innerValueConverter.ReadAsPropertyName(ref reader, typeof({innerValueTypeName}), options);");
+                cw.AppendLine("return From(innerValue);");
+            }
+
+            cw.AppendLine($"public override void WriteAsPropertyName(global::System.Text.Json.Utf8JsonWriter writer, {valueObjectTypeName} value, global::System.Text.Json.JsonSerializerOptions options)");
+            using (cw.AddBlock())
+            {
+                cw.AppendLine("var innerValueConverter = GetInnerValueConverter(options);");
+                cw.AppendLine("innerValueConverter.WriteAsPropertyName(writer, value.Value, options);");
+            }
+        }
+    }
+
     public static void AddRandomValueMethod(
         CodeWriter cw,
-        string valueObjectTypeName,
         string randomTypeName,
-        bool hasGetRandomOverride,
-        bool hasNewRandomValueOverride)
+        bool hasGetRandomOverride)
     {
         if (!hasGetRandomOverride)
         {
             cw.AppendLine($"public static {randomTypeName} GetRandom() => new {randomTypeName}();");
-        }
-
-        if (!hasNewRandomValueOverride)
-        {
-            cw.AppendLine($"public static {valueObjectTypeName} NewRandomValue()");
-            using (cw.AddBlock())
-            {
-                cw.AppendLine("var randomValue = GenerateRandomValue(GetRandom());");
-                cw.AppendLine("return randomValue;");
-            }
         }
     }
 

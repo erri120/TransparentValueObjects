@@ -2,7 +2,7 @@ using Xunit;
 
 namespace TransparentValueObjects.Tests.ValueObjectIncrementalSourceGeneratorTests.Augments;
 
-public class HasDefaultValue
+public class HasSystemTextJsonConverter_WithConverter
 {
     private const string Input =
 """
@@ -12,9 +12,9 @@ using TransparentValueObjects.Augments;
 namespace TestNamespace;
 
 [ValueObject<string>]
-public readonly partial struct StringValueObject : IHasDefaultValue<StringValueObject>
+public readonly partial struct StringValueObject : IHasSystemTextJsonConverter
 {
-    public static StringValueObject DefaultValue => From("Hello World!");
+    public static global::System.Type SystemTextJsonConverterType => typeof(StringValueObject);
 }
 """;
 
@@ -26,6 +26,7 @@ namespace TestNamespace;
 
 [global::System.Diagnostics.DebuggerDisplay("{Value}")]
 [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage(Justification = "Auto-generated.")]
+[global::System.Text.Json.Serialization.JsonConverter(typeof(SystemTextJsonConverter))]
 readonly partial struct StringValueObject :
 	global::TransparentValueObjects.Augments.IValueObject<global::System.String>,
 	global::System.IEquatable<StringValueObject>,
@@ -36,9 +37,10 @@ readonly partial struct StringValueObject :
 
     public static global::System.Type InnerValueType => typeof(global::System.String);
 
+	[global::System.Obsolete($"Use StringValueObject.{nameof(From)} instead.", error: true)]
 	public StringValueObject()
 	{
-	    Value = DefaultValue.Value;
+		throw new global::System.InvalidOperationException($"Use StringValueObject.{nameof(From)} instead.");
 	}
 
 	private StringValueObject(global::System.String value)

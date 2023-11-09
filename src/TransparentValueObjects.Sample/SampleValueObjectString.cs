@@ -9,6 +9,7 @@ namespace TransparentValueObjects.Sample;
 public readonly partial struct SampleValueObjectString :
     IHasDefaultValue<SampleValueObjectString, string>,
     IHasDefaultEqualityComparer<SampleValueObjectString, string>,
+    IHasSystemTextJsonConverter,
     IHasRandomValueGenerator<SampleValueObjectString, string, Random>
 {
     public static SampleValueObjectString DefaultValue => From("Hello World!");

@@ -1,3 +1,5 @@
+using System;
+
 namespace TransparentValueObjects.Augments;
 
 public interface IHasUnmanagedRandomValueGenerator<out TValueObject, out TValue, out TRandom> : IHasRandomValueGenerator<TValueObject, TValue, TRandom>

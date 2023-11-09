@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\TransparentValueObjects.Sample\TransparentValueObjects.Sample.csproj" />
+    </ItemGroup>
+
+</Project>
