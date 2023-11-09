@@ -1,0 +1,39 @@
+<Project>
+    <ItemGroup>
+        <PackageVersion Include="JetBrains.Annotations" Version="2023.2.0" PrivateAssets="all" />
+        <PackageVersion Include="Meziantou.Analyzer" Version="2.0.106" PrivateAssets="all" />
+        <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="all" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageVersion>
+        <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.7.0"/>
+        <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.7.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="7.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageVersion Include="FluentAssertions" Version="6.12.0" />
+        <PackageVersion Include="FluentAssertions.Analyzers" Version="0.26.0" />
+        <PackageVersion Include="GitHubActionsTestLogger" Version="2.3.3">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageVersion>
+        <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+        <PackageVersion Include="xunit" Version="2.4.2"/>
+        <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.5">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageVersion>
+        <PackageVersion Include="coverlet.collector" Version="6.0.0">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageVersion>
+    </ItemGroup>
+</Project>

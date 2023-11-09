@@ -1,0 +1,29 @@
+<Project>
+
+    <PropertyGroup>
+        <IsPackable>true</IsPackable>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <Authors>erri120</Authors>
+
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+
+        <PackageProjectUrl>https://github.com/erri120/TransparentValueObjects</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/erri120/TransparentValueObjects.git</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+        <!-- https://github.com/dotnet/sourcelink/tree/main/docs#publishrepositoryurl -->
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.SourceLink.GitHub" />
+    </ItemGroup>
+
+</Project>

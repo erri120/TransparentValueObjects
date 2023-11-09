@@ -1,4 +1,3 @@
-﻿using System;
 using System.Collections.Generic;
 using TransparentValueObjects.Augments;
 using TransparentValueObjects.Generated;
@@ -9,6 +8,7 @@ namespace TransparentValueObjects.Sample;
 public readonly partial struct SampleValueObjectInt :
     IHasDefaultValue<SampleValueObjectInt, int>,
     IHasDefaultEqualityComparer<SampleValueObjectInt, int>,
+    IHasSystemTextJsonConverter,
     IHasEfCore<SampleValueObjectInt, int>
 {
     public static SampleValueObjectInt DefaultValue => From(0);

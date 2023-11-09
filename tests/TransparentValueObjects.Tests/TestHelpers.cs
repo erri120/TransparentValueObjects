@@ -14,7 +14,7 @@ public static class TestHelpers
         var (driver, compilation) = SetupGenerator(new[] { CSharpSyntaxTree.ParseText(input) });
 
         var runResult = driver.RunGenerators(compilation).GetRunResult();
-        var generated = runResult.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith(fileName));
+        var generated = runResult.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith(fileName, System.StringComparison.Ordinal));
         generated.Should().NotBeNull();
 
         NormalizeEquals(generated!.GetText().ToString(), expectedOutput);

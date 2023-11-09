@@ -2,7 +2,7 @@ using Xunit;
 
 namespace TransparentValueObjects.Tests.ValueObjectIncrementalSourceGeneratorTests.Augments;
 
-public class HasEfCore
+public class HasSystemTextJsonConverter_WithConverter
 {
     private const string Input =
 """
@@ -12,7 +12,10 @@ using TransparentValueObjects.Augments;
 namespace TestNamespace;
 
 [ValueObject<string>]
-public readonly partial struct StringValueObject : IHasEfCore<StringValueObject, string> { }
+public readonly partial struct StringValueObject : IHasSystemTextJsonConverter
+{
+    public static global::System.Type SystemTextJsonConverterType => typeof(StringValueObject);
+}
 """;
 
     private const string Output =
@@ -23,6 +26,7 @@ namespace TestNamespace;
 
 [global::System.Diagnostics.DebuggerDisplay("{Value}")]
 [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage(Justification = "Auto-generated.")]
+[global::System.Text.Json.Serialization.JsonConverter(typeof(SystemTextJsonConverter))]
 readonly partial struct StringValueObject :
 	global::TransparentValueObjects.Augments.IValueObject<global::System.String>,
 	global::System.IEquatable<StringValueObject>,
@@ -31,7 +35,7 @@ readonly partial struct StringValueObject :
 {
 	public readonly global::System.String Value;
 
-	public static global::System.Type InnerValueType => typeof(global::System.String);
+    public static global::System.Type InnerValueType => typeof(global::System.String);
 
 	[global::System.Obsolete($"Use StringValueObject.{nameof(From)} instead.", error: true)]
 	public StringValueObject()
@@ -73,21 +77,6 @@ readonly partial struct StringValueObject :
 	public static explicit operator StringValueObject(global::System.String value) => From(value);
 	public static explicit operator global::System.String(StringValueObject value) => value.Value;
 
-	public class EfCoreValueConverter : global::Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<StringValueObject, global::System.String>
-	{
-		public EfCoreValueConverter() : this(null) { }
-		public EfCoreValueConverter(global::Microsoft.EntityFrameworkCore.Storage.ValueConversion.ConverterMappingHints? mappingHints = null) : base(
-			value => value.Value,
-			innerValue => From(innerValue), mappingHints) { }
-	}
-
-	public class EfCoreValueComparer : global::Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer<StringValueObject>
-	{
-		public EfCoreValueComparer() : base((left, right) => right.Equals(left), value => value.GetHashCode(), value => From(value.Value)) { }
-		public override int GetHashCode(StringValueObject value) => value.GetHashCode();
-		public override bool Equals(StringValueObject left, StringValueObject right) => right.Equals(left);
-	}
-
 	public global::System.Int32 CompareTo(StringValueObject other) => Value.CompareTo(other);
 	public static bool operator <(StringValueObject left, StringValueObject right) => left.Value.CompareTo(right.Value) < 0;
 	public static bool operator >(StringValueObject left, StringValueObject right) => left.Value.CompareTo(right.Value) > 0;
@@ -104,12 +93,6 @@ readonly partial struct StringValueObject :
 	public static bool operator <=(StringValueObject left, global::System.String right) => left.Value.CompareTo(right) <= 0;
 	public static bool operator >=(StringValueObject left, global::System.String right) => left.Value.CompareTo(right) >= 0;
 
-}
-
-public static class StringValueObjectEfCoreExtensions
-{
-	public static global::Microsoft.EntityFrameworkCore.Metadata.Builders.PropertyBuilder<StringValueObject> HasTransparentValueObjectConversion(this global::Microsoft.EntityFrameworkCore.Metadata.Builders.PropertyBuilder<StringValueObject> propertyBuilder) =>
-	propertyBuilder.HasConversion<StringValueObject.EfCoreValueConverter, StringValueObject.EfCoreValueComparer>();
 }
 """;
 
