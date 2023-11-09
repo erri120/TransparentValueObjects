@@ -28,6 +28,8 @@ readonly partial struct GuidValueObject :
 {
 	public readonly global::System.Guid Value;
 
+    public static global::System.Type InnerValueType => typeof(global::System.Guid);
+
 	[global::System.Obsolete($"Use GuidValueObject.{nameof(From)} instead.", error: true)]
 	public GuidValueObject()
 	{

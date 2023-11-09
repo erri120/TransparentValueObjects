@@ -29,8 +29,4 @@ public interface IValueObject
 /// <typeparam name="TValue"></typeparam>
 [PublicAPI]
 public interface IValueObject<TValue> : IValueObject
-    where TValue : notnull
-{
-    /// <inheritdoc/>
-    static Type IValueObject.InnerValueType => typeof(TValue);
-}
+    where TValue : notnull { }

@@ -141,6 +141,10 @@ namespace {{GeneratedNamespace}}
                 cw.AppendLine($"public readonly {innerValueTypeName} Value;");
                 cw.AppendLine();
 
+                // IValueObject implementation
+                cw.AppendLine($"public static global::System.Type InnerValueType => typeof({innerValueTypeName});");
+                cw.AppendLine();
+
                 // public default constructor
                 var hasDefaultValue = HasAugment(valueObjectInterfaces, HasDefaultValueInterfaceName);
                 AddPublicConstructor(cw, valueObjectTypeName, hasDefaultValue);

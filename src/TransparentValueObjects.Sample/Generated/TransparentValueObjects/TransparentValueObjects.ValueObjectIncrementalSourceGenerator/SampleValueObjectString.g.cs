@@ -13,6 +13,8 @@ readonly partial struct SampleValueObjectString :
 {
 	public readonly global::System.String Value;
 
+	public static global::System.Type InnerValueType => typeof(global::System.String);
+
 	public SampleValueObjectString()
 	{
 		Value = DefaultValue.Value;

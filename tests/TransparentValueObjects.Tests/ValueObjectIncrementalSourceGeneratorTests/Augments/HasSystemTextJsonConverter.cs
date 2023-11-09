@@ -32,6 +32,8 @@ readonly partial struct StringValueObject :
 {
 	public readonly global::System.String Value;
 
+    public static global::System.Type InnerValueType => typeof(global::System.String);
+
 	[global::System.Obsolete($"Use StringValueObject.{nameof(From)} instead.", error: true)]
 	public StringValueObject()
 	{

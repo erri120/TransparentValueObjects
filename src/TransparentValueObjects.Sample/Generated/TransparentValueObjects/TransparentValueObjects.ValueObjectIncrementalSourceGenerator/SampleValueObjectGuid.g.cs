@@ -13,6 +13,8 @@ readonly partial struct SampleValueObjectGuid :
 {
 	public readonly global::System.Guid Value;
 
+	public static global::System.Type InnerValueType => typeof(global::System.Guid);
+
 	public SampleValueObjectGuid()
 	{
 		Value = DefaultValue.Value;
