@@ -10,6 +10,8 @@ public class HasDefaultEqualityComparer
     {
         var left = SampleValueObjectString.From("foo");
         var right = SampleValueObjectString.From("FOO");
+#pragma warning disable MA0002
         left.Equals(right).Should().BeTrue();
+#pragma warning restore MA0002
     }
 }

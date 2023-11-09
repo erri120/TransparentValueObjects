@@ -27,8 +27,9 @@
 
     <PropertyGroup>
         <!-- SYSLIB1006: Multiple logging methods cannot use the same event ID -->
+        <!-- MA0048: File name must match type name -->
         <!-- MA0051: Method too long -->
-        <NoWarn>$(NoWarn);SYSLIB1006;MA0051</NoWarn>
+        <NoWarn>$(NoWarn);SYSLIB1006;MA0048;MA0051</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

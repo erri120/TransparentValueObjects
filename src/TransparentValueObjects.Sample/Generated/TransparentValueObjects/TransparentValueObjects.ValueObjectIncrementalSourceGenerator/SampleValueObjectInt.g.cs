@@ -91,10 +91,10 @@ readonly partial struct SampleValueObjectInt :
 	}
 
 	public global::System.Int32 CompareTo(SampleValueObjectInt other) => Value.CompareTo(other);
-	public static bool operator <(SampleValueObjectInt left, SampleValueObjectInt right) => left.CompareTo(right) < 0;
-	public static bool operator >(SampleValueObjectInt left, SampleValueObjectInt right) => left.CompareTo(right) > 0;
-	public static bool operator <=(SampleValueObjectInt left, SampleValueObjectInt right) => left.CompareTo(right) <= 0;
-	public static bool operator >=(SampleValueObjectInt left, SampleValueObjectInt right) => left.CompareTo(right) >= 0;
+	public static bool operator <(SampleValueObjectInt left, SampleValueObjectInt right) => left.Value.CompareTo(right.Value) < 0;
+	public static bool operator >(SampleValueObjectInt left, SampleValueObjectInt right) => left.Value.CompareTo(right.Value) > 0;
+	public static bool operator <=(SampleValueObjectInt left, SampleValueObjectInt right) => left.Value.CompareTo(right.Value) <= 0;
+	public static bool operator >=(SampleValueObjectInt left, SampleValueObjectInt right) => left.Value.CompareTo(right.Value) >= 0;
 
 	public static bool operator <(global::System.Int32 left, SampleValueObjectInt right) => left.CompareTo(right.Value) < 0;
 	public static bool operator >(global::System.Int32 left, SampleValueObjectInt right) => left.CompareTo(right.Value) > 0;

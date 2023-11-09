@@ -26,7 +26,7 @@ namespace TransparentValueObjects.Generated
         var (driver, compilation) = TestHelpers.SetupGenerator(Array.Empty<SyntaxTree>());
 
         var runResult = driver.RunGenerators(compilation).GetRunResult();
-        var generated = runResult.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("ValueObjectAttribute.g.cs"));
+        var generated = runResult.GeneratedTrees.FirstOrDefault(t => t.FilePath.EndsWith("ValueObjectAttribute.g.cs", StringComparison.Ordinal));
         generated.Should().NotBeNull();
 
         TestHelpers.NormalizeEquals(generated!.GetText().ToString(), Output);
