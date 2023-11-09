@@ -92,6 +92,7 @@ readonly partial struct SampleValueObjectString :
 
 	}
 
+	public static global::System.Random GetRandom() => new global::System.Random();
 	public global::System.Int32 CompareTo(SampleValueObjectString other) => Value.CompareTo(other);
 	public static bool operator <(SampleValueObjectString left, SampleValueObjectString right) => left.Value.CompareTo(right.Value) < 0;
 	public static bool operator >(SampleValueObjectString left, SampleValueObjectString right) => left.Value.CompareTo(right.Value) > 0;

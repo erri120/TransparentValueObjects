@@ -20,6 +20,8 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
     private const string HasDefaultValueInterfaceName = "IHasDefaultValue";
     private const string HasDefaultEqualityComparerInterfaceName = "IHasDefaultEqualityComparer";
     private const string HasSystemTextJsonConverterInterfaceName = "IHasSystemTextJsonConverter";
+    private const string HasRandomValueGeneratorInterfaceName = "IHasRandomValueGenerator";
+    private const string HasUnmanagedRandomValueGeneratorInterfaceName = "IHasUnmanagedRandomValueGenerator";
 
     private const string AttributeSourceCode =
 $$"""
@@ -173,6 +175,24 @@ namespace {{GeneratedNamespace}}
                 if (hasSystemTextJsonConverter && !hasSystemTextJsonConverterOverride)
                     AddSystemTextJsonClasses(cw, valueObjectTypeName, innerValueTypeName, hasDefaultValue);
 
+                // The NewRandomValue
+                if (GetAugment(valueObjectInterfaces, HasRandomValueGeneratorInterfaceName) is { TypeArguments.Length: 3 } randomAugmentTypeSymbol)
+                {
+                    var randomType = randomAugmentTypeSymbol.TypeArguments[2];
+                    var randomTypeName = $"global::{randomType.ContainingNamespace.ToDisplayString()}.{randomType.Name}";
+                    var hasGetRandomOverride = valueObjectNamedTypeSymbol.GetMembers("GetRandom")
+                        .Any(x => x is IMethodSymbol { ReturnType: var ret, Parameters.Length: 0 } && SymbolEqualityComparer.Default.Equals(ret, randomType));
+                    AddRandomValueMethod(cw, randomTypeName, hasGetRandomOverride);
+                }
+                if (GetAugment(valueObjectInterfaces, HasUnmanagedRandomValueGeneratorInterfaceName) is { TypeArguments.Length: 3 } uRandomAugmentTypeSymbol)
+                {
+                    var randomType = uRandomAugmentTypeSymbol.TypeArguments[2];
+                    var randomTypeName = $"global::{randomType.ContainingNamespace.ToDisplayString()}.{randomType.Name}";
+                    var hasGetRandomOverride = valueObjectNamedTypeSymbol.GetMembers("GetRandom")
+                        .Any(x => x is IMethodSymbol { ReturnType: var ret, Parameters.Length: 0 } && SymbolEqualityComparer.Default.Equals(ret, randomType));
+                    AddUnmanagedRandomValueMethod(cw, valueObjectTypeName, innerValueTypeName, randomTypeName, hasGetRandomOverride);
+                }
+
                 if (comparableInterfaceTypeSymbol is not null)
                 {
                     ForwardInterface(cw, valueObjectTypeName, comparableInterfaceTypeSymbol);
@@ -198,6 +218,11 @@ namespace {{GeneratedNamespace}}
                            string.Equals(namedSymbol.Name, typeNameWithoutType, StringComparison.Ordinal) && namedSymbol.TypeArguments.Length == 1 &&
                            string.Equals(namedSymbol.TypeArguments[0].Name, innerValueTypeSymbol.Name, StringComparison.Ordinal)
         );
+    }
+
+    private static INamedTypeSymbol? GetAugment(ImmutableArray<INamedTypeSymbol> existingInterfaces, string augmentName)
+    {
+        return existingInterfaces.FirstOrDefault(x => x.Name == augmentName && x.ContainingNamespace.ToDisplayString() == AugmentedNamespace);
     }
 
     private static bool HasAugment(ImmutableArray<INamedTypeSymbol> existingInterfaces, string augmentName)
@@ -439,6 +464,41 @@ namespace {{GeneratedNamespace}}
                 cw.AppendLine("var innerValueConverter = GetInnerValueConverter(options);");
                 cw.AppendLine("innerValueConverter.WriteAsPropertyName(writer, value.Value, options);");
             }
+        }
+    }
+
+    public static void AddRandomValueMethod(
+        CodeWriter cw,
+        string randomTypeName,
+        bool hasGetRandomOverride)
+    {
+        if (!hasGetRandomOverride)
+        {
+            cw.AppendLine($"public static {randomTypeName} GetRandom() => new {randomTypeName}();");
+        }
+    }
+
+    public static void AddUnmanagedRandomValueMethod(
+        CodeWriter cw,
+        string valueObjectTypeName,
+        string innerValueTypeName,
+        string randomTypeName,
+        bool hasGetRandomOverride)
+    {
+        if (!hasGetRandomOverride)
+        {
+            cw.AppendLine($"public static {randomTypeName} GetRandom() => new {randomTypeName}();");
+        }
+
+        cw.AppendLine($"public static {valueObjectTypeName} NewRandomValue()");
+        using (cw.AddBlock())
+        {
+            cw.AppendLine("var random = GetRandom();");
+            cw.AppendLine($"var size = global::System.Runtime.CompilerServices.Unsafe.SizeOf<{innerValueTypeName}>();");
+            cw.AppendLine("global::System.Span<byte> bytes = stackalloc byte[size];");
+            cw.AppendLine("random.NextBytes(bytes);");
+            cw.AppendLine($"var id = global::System.Runtime.InteropServices.MemoryMarshal.Cast<byte, {innerValueTypeName}>(bytes)[0];");
+            cw.AppendLine($"return {valueObjectTypeName}.From(id);");
         }
     }
 

@@ -32,7 +32,7 @@ readonly partial struct SampleValueObjectInt :
 	public override string ToString() => Value.ToString();
 
 	public bool Equals(SampleValueObjectInt other) => Equals(other.Value);
-	public bool Equals(global::System.Int32 other) => Value.Equals(other);
+	public bool Equals(global::System.Int32 other) => InnerValueDefaultEqualityComparer.Equals(Value, other);
 	public bool Equals(SampleValueObjectInt other, global::System.Collections.Generic.IEqualityComparer<global::System.Int32> comparer) => comparer.Equals(Value, other.Value);
 	public override bool Equals(object? obj)
 	{
@@ -90,6 +90,17 @@ readonly partial struct SampleValueObjectInt :
 			innerValueConverter.WriteAsPropertyName(writer, value.Value, options);
 		}
 
+	}
+
+	public static global::System.Random GetRandom() => new global::System.Random();
+	public static SampleValueObjectInt NewRandomValue()
+	{
+		var random = GetRandom();
+		var size = global::System.Runtime.CompilerServices.Unsafe.SizeOf<global::System.Int32>();
+		global::System.Span<byte> bytes = stackalloc byte[size];
+		random.NextBytes(bytes);
+		var id = global::System.Runtime.InteropServices.MemoryMarshal.Cast<byte, global::System.Int32>(bytes)[0];
+		return SampleValueObjectInt.From(id);
 	}
 
 	public global::System.Int32 CompareTo(SampleValueObjectInt other) => Value.CompareTo(other);
