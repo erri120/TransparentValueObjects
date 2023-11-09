@@ -68,7 +68,7 @@ namespace {{GeneratedNamespace}}
         var attributes = symbol.GetAttributes();
         if (attributes.Length == 0) return default;
 
-        var attributeData = attributes.FirstOrDefault(static a => a?.AttributeClass?.Name == $"{AttributeClassName}");
+        var attributeData = attributes.FirstOrDefault(static a => string.Equals(a?.AttributeClass?.Name, $"{AttributeClassName}", StringComparison.Ordinal));
         if (attributeData is null) return default;
 
         return new Target(syntaxNode, attributeData);
@@ -84,7 +84,7 @@ namespace {{GeneratedNamespace}}
             var attributeData = target.AttributeData;
 
             var semanticModel = compilation.GetSemanticModel(valueObjectDeclarationSyntax.SyntaxTree);
-            var valueObjectTypeSymbol = semanticModel.GetDeclaredSymbol(valueObjectDeclarationSyntax);
+            var valueObjectTypeSymbol = semanticModel.GetDeclaredSymbol(valueObjectDeclarationSyntax, cancellationToken: context.CancellationToken);
 
             if (valueObjectTypeSymbol is not INamedTypeSymbol valueObjectNamedTypeSymbol) continue;
 
@@ -172,7 +172,7 @@ namespace {{GeneratedNamespace}}
                 if (comparableInterfaceTypeSymbol is not null)
                     ForwardInterface(cw, valueObjectTypeName, comparableInterfaceTypeSymbol);
 
-                if (innerValueTypeName == "global::System.Guid")
+                if (string.Equals(innerValueTypeName, "global::System.Guid", StringComparison.Ordinal))
                     AddGuidSpecificCode(cw, valueObjectTypeName, innerValueTypeName);
             }
 
@@ -187,16 +187,18 @@ namespace {{GeneratedNamespace}}
     {
         var typeNameWithoutType = interfaceType.Name.Substring(0, interfaceType.Name.IndexOf('`'));
         return interfaces.FirstOrDefault(
-            namedSymbol => namedSymbol.ContainingNamespace.Name == interfaceType.Namespace &&
-                           namedSymbol.Name == typeNameWithoutType &&
-                           namedSymbol.TypeArguments.Length == 1 &&
-                           namedSymbol.TypeArguments[0].Name == innerValueTypeSymbol.Name
+            namedSymbol => string.Equals(namedSymbol.ContainingNamespace.Name, interfaceType.Namespace, StringComparison.Ordinal) &&
+                           string.Equals(namedSymbol.Name, typeNameWithoutType, StringComparison.Ordinal) && namedSymbol.TypeArguments.Length == 1 &&
+                           string.Equals(namedSymbol.TypeArguments[0].Name, innerValueTypeSymbol.Name, StringComparison.Ordinal)
         );
     }
 
     private static bool HasAugment(ImmutableArray<INamedTypeSymbol> existingInterfaces, string augmentName)
     {
-        return existingInterfaces.Any(x => x.Name == augmentName && x.ContainingNamespace.ToDisplayString() == AugmentedNamespace);
+        return existingInterfaces.Any(x =>
+            string.Equals(x.Name, augmentName, StringComparison.Ordinal) &&
+            string.Equals(x.ContainingNamespace.ToDisplayString(), AugmentedNamespace, StringComparison.Ordinal)
+        );
     }
 
     public static void AddPublicConstructor(CodeWriter cw, string valueObjectTypeName, bool hasDefaultValue)
