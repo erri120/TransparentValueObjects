@@ -3,5 +3,6 @@
 
     <PropertyGroup>
         <WarningsAsErrors>Nullable</WarningsAsErrors>
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
     </PropertyGroup>
 </Project>
