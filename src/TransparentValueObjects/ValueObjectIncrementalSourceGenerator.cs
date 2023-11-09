@@ -420,7 +420,7 @@ namespace {{GeneratedNamespace}}
         cw.AppendLine();
     }
 
-        public static void AddSystemTextJsonClasses(CodeWriter cw, string valueObjectTypeName, string innerValueTypeName, bool hasDefaultValue)
+    public static void AddSystemTextJsonClasses(CodeWriter cw, string valueObjectTypeName, string innerValueTypeName, bool hasDefaultValue)
     {
         cw.AppendLine("public static global::System.Type SystemTextJsonConverterType => typeof(SystemTextJsonConverter);");
 

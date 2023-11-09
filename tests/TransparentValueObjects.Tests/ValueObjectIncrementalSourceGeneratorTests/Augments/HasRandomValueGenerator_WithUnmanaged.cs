@@ -31,6 +31,8 @@ readonly partial struct Int32ValueObject :
 {
 	public readonly global::System.String Value;
 
+	public static global::System.Type InnerValueType => typeof(global::System.String);
+
 	[global::System.Obsolete($"Use Int32ValueObject.{nameof(From)} instead.", error: true)]
 	public Int32ValueObject()
 	{
@@ -83,6 +85,21 @@ readonly partial struct Int32ValueObject :
 	}
 
 	public global::System.Int32 CompareTo(Int32ValueObject other) => Value.CompareTo(other);
+	public static bool operator <(Int32ValueObject left, Int32ValueObject right) => left.Value.CompareTo(right.Value) < 0;
+	public static bool operator >(Int32ValueObject left, Int32ValueObject right) => left.Value.CompareTo(right.Value) > 0;
+	public static bool operator <=(Int32ValueObject left, Int32ValueObject right) => left.Value.CompareTo(right.Value) <= 0;
+	public static bool operator >=(Int32ValueObject left, Int32ValueObject right) => left.Value.CompareTo(right.Value) >= 0;
+
+	public static bool operator <(global::System.String left, Int32ValueObject right) => left.CompareTo(right.Value) < 0;
+	public static bool operator >(global::System.String left, Int32ValueObject right) => left.CompareTo(right.Value) > 0;
+	public static bool operator <=(global::System.String left, Int32ValueObject right) => left.CompareTo(right.Value) <= 0;
+	public static bool operator >=(global::System.String left, Int32ValueObject right) => left.CompareTo(right.Value) >= 0;
+
+	public static bool operator <(Int32ValueObject left, global::System.String right) => left.Value.CompareTo(right) < 0;
+	public static bool operator >(Int32ValueObject left, global::System.String right) => left.Value.CompareTo(right) > 0;
+	public static bool operator <=(Int32ValueObject left, global::System.String right) => left.Value.CompareTo(right) <= 0;
+	public static bool operator >=(Int32ValueObject left, global::System.String right) => left.Value.CompareTo(right) >= 0;
+
 }
 """;
 
