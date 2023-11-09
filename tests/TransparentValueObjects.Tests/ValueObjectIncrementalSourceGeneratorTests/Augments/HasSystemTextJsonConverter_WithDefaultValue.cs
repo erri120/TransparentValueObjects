@@ -26,7 +26,7 @@ namespace TestNamespace;
 
 [global::System.Diagnostics.DebuggerDisplay("{Value}")]
 [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage(Justification = "Auto-generated.")]
-[global::System.Text.Json.Serialization.JsonConverter(typeof(StringValueObject))]
+[global::System.Text.Json.Serialization.JsonConverter(typeof(SystemTextJsonConverter))]
 readonly partial struct StringValueObject :
 	global::TransparentValueObjects.Augments.IValueObject<global::System.String>,
 	global::System.IEquatable<StringValueObject>,

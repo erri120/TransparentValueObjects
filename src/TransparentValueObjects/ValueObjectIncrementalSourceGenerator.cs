@@ -115,8 +115,9 @@ namespace {{GeneratedNamespace}}
             cw.AppendLine("[global::System.Diagnostics.DebuggerDisplay(\"{Value}\")]");
             cw.AppendLine("[global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage(Justification = \"Auto-generated.\")]");
 
+            // TODO: use override
             if (hasSystemTextJsonConverter)
-                cw.AppendLine($"[global::System.Text.Json.Serialization.JsonConverter(typeof({valueObjectTypeName}))]");
+                cw.AppendLine("[global::System.Text.Json.Serialization.JsonConverter(typeof(SystemTextJsonConverter))]");
 
             cw.AppendLine($"readonly partial struct {valueObjectTypeName} :");
 
