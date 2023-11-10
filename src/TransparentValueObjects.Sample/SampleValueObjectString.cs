@@ -9,7 +9,8 @@ namespace TransparentValueObjects.Sample;
 public readonly partial struct SampleValueObjectString :
     IHasDefaultValue<SampleValueObjectString, string>,
     IHasDefaultEqualityComparer<SampleValueObjectString, string>,
-    IHasSystemTextJsonConverter
+    IHasSystemTextJsonConverter,
+    IHasEfCore<SampleValueObjectString, string>
 {
     public static SampleValueObjectString DefaultValue => From("Hello World!");
     public static IEqualityComparer<string> InnerValueDefaultEqualityComparer => StringComparer.OrdinalIgnoreCase;

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
@@ -20,6 +21,7 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
     private const string HasDefaultValueInterfaceName = "IHasDefaultValue";
     private const string HasDefaultEqualityComparerInterfaceName = "IHasDefaultEqualityComparer";
     private const string HasSystemTextJsonConverterInterfaceName = "IHasSystemTextJsonConverter";
+    private const string HasEfCoreInterfaceName = "IHasEfCore";
 
     private const string AttributeSourceCode =
 $$"""
@@ -104,6 +106,8 @@ namespace {{GeneratedNamespace}}
             var hasSystemTextJsonConverterOverride = valueObjectNamedTypeSymbol.GetMembers("SystemTextJsonConverterType")
                 .Any(x => x is IPropertySymbol { Type: var ret } && SymbolEqualityComparer.Default.Equals(ret, typeSymbol));
 
+            var hasEfCore = HasAugment(valueObjectInterfaces, HasEfCoreInterfaceName);
+
             var cw = new CodeWriter();
 
             // header, namespace and type definition
@@ -173,6 +177,10 @@ namespace {{GeneratedNamespace}}
                 if (hasSystemTextJsonConverter && !hasSystemTextJsonConverterOverride)
                     AddSystemTextJsonClasses(cw, valueObjectTypeName, innerValueTypeName, hasDefaultValue);
 
+                // EF Core
+                if (hasEfCore)
+                    AddEfCoreClasses(cw, valueObjectTypeName, innerValueTypeName);
+
                 if (comparableInterfaceTypeSymbol is not null)
                 {
                     ForwardInterface(cw, valueObjectTypeName, comparableInterfaceTypeSymbol);
@@ -182,6 +190,9 @@ namespace {{GeneratedNamespace}}
                 if (string.Equals(innerValueTypeName, "global::System.Guid", StringComparison.Ordinal))
                     AddGuidSpecificCode(cw, valueObjectTypeName, innerValueTypeName);
             }
+
+            if (hasEfCore)
+                AddEfCoreExtensions(cw, valueObjectTypeName, SyntaxFacts.GetText(valueObjectTypeSymbol.DeclaredAccessibility));
 
             context.AddSource($"{valueObjectTypeName}.g.cs", SourceText.From(cw.ToString(), Encoding.UTF8));
         }
@@ -439,6 +450,36 @@ namespace {{GeneratedNamespace}}
                 cw.AppendLine("var innerValueConverter = GetInnerValueConverter(options);");
                 cw.AppendLine("innerValueConverter.WriteAsPropertyName(writer, value.Value, options);");
             }
+        }
+    }
+
+    public static void AddEfCoreClasses(CodeWriter cw, string valueObjectTypeName, string innerValueTypeName)
+    {
+        cw.AppendLine($"public class EfCoreValueConverter : global::Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<{valueObjectTypeName}, {innerValueTypeName}>");
+        using (cw.AddBlock())
+        {
+            cw.AppendLine("public EfCoreValueConverter() : this(null) { }");
+            cw.AppendLine("public EfCoreValueConverter(global::Microsoft.EntityFrameworkCore.Storage.ValueConversion.ConverterMappingHints? mappingHints = null) : base(");
+            cw.AppendLine("\tvalue => value.Value,");
+            cw.AppendLine("\tinnerValue => From(innerValue), mappingHints) { }");
+        }
+
+        cw.AppendLine($"public class EfCoreValueComparer : global::Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer<{valueObjectTypeName}>");
+        using (cw.AddBlock())
+        {
+            cw.AppendLine("public EfCoreValueComparer() : base((left, right) => right.Equals(left), value => value.GetHashCode(), value => From(value.Value)) { }");
+            cw.AppendLine($"public override int GetHashCode({valueObjectTypeName} value) => value.GetHashCode();");
+            cw.AppendLine($"public override bool Equals({valueObjectTypeName} left, {valueObjectTypeName} right) => right.Equals(left);");
+        }
+    }
+
+    public static void AddEfCoreExtensions(CodeWriter cw, string valueObjectTypeName, string accessibility)
+    {
+        cw.AppendLine($"{accessibility} static class {valueObjectTypeName}EfCoreExtensions");
+        using (cw.AddBlock())
+        {
+            cw.AppendLine($"public static global::Microsoft.EntityFrameworkCore.Metadata.Builders.PropertyBuilder<{valueObjectTypeName}> HasTransparentValueObjectConversion(this global::Microsoft.EntityFrameworkCore.Metadata.Builders.PropertyBuilder<{valueObjectTypeName}> propertyBuilder) =>");
+            cw.AppendLine($"propertyBuilder.HasConversion<{valueObjectTypeName}.EfCoreValueConverter, {valueObjectTypeName}.EfCoreValueComparer>();");
         }
     }
 

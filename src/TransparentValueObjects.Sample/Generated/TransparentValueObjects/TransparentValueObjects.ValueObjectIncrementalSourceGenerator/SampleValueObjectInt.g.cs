@@ -32,7 +32,7 @@ readonly partial struct SampleValueObjectInt :
 	public override string ToString() => Value.ToString();
 
 	public bool Equals(SampleValueObjectInt other) => Equals(other.Value);
-	public bool Equals(global::System.Int32 other) => Value.Equals(other);
+	public bool Equals(global::System.Int32 other) => InnerValueDefaultEqualityComparer.Equals(Value, other);
 	public bool Equals(SampleValueObjectInt other, global::System.Collections.Generic.IEqualityComparer<global::System.Int32> comparer) => comparer.Equals(Value, other.Value);
 	public override bool Equals(object? obj)
 	{
