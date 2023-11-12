@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\TransparentValueObjects.Augments\TransparentValueObjects.Augments.csproj" />
         <ProjectReference Include="..\..\src\TransparentValueObjects\TransparentValueObjects.csproj" />
     </ItemGroup>
 

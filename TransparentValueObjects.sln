@@ -28,8 +28,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransparentValueObjects.Sam
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransparentValueObjects.Tests", "tests\TransparentValueObjects.Tests\TransparentValueObjects.Tests.csproj", "{2084CEAE-BACC-4FA4-9F76-D1A4098C9A5E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransparentValueObjects.Augments", "src\TransparentValueObjects.Augments\TransparentValueObjects.Augments.csproj", "{0E907DE9-47EA-4974-AB0C-4ADAEEC2724B}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransparentValueObjects.Sample.Tests", "tests\TransparentValueObjects.Sample.Tests\TransparentValueObjects.Sample.Tests.csproj", "{844F8541-7605-467D-A6DF-995C94EF37CB}"
 EndProject
 Global
@@ -41,7 +39,6 @@ Global
 		{B333D4DF-0147-4162-B33A-821B1D16746D} = {D7366524-42DB-4204-807A-80E28FF3BE8E}
 		{B0587ECB-BC82-4BE2-B1E3-632E0CB16354} = {D7366524-42DB-4204-807A-80E28FF3BE8E}
 		{2084CEAE-BACC-4FA4-9F76-D1A4098C9A5E} = {08302C8D-3533-4967-A69D-90A971618F90}
-		{0E907DE9-47EA-4974-AB0C-4ADAEEC2724B} = {D7366524-42DB-4204-807A-80E28FF3BE8E}
 		{844F8541-7605-467D-A6DF-995C94EF37CB} = {08302C8D-3533-4967-A69D-90A971618F90}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
@@ -57,10 +54,6 @@ Global
 		{2084CEAE-BACC-4FA4-9F76-D1A4098C9A5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2084CEAE-BACC-4FA4-9F76-D1A4098C9A5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2084CEAE-BACC-4FA4-9F76-D1A4098C9A5E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0E907DE9-47EA-4974-AB0C-4ADAEEC2724B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0E907DE9-47EA-4974-AB0C-4ADAEEC2724B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0E907DE9-47EA-4974-AB0C-4ADAEEC2724B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0E907DE9-47EA-4974-AB0C-4ADAEEC2724B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{844F8541-7605-467D-A6DF-995C94EF37CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{844F8541-7605-467D-A6DF-995C94EF37CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{844F8541-7605-467D-A6DF-995C94EF37CB}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -30,6 +30,9 @@
         <!-- MA0048: File name must match type name -->
         <!-- MA0051: Method too long -->
         <NoWarn>$(NoWarn);SYSLIB1006;MA0048;MA0051</NoWarn>
+
+        <!-- MSB5029: The wildcard results in enumerating all files on the drive -->
+        <WarningsAsErrors>$(WarningsAsErrors);MSB5029</WarningsAsErrors>
     </PropertyGroup>
 
     <ItemGroup>

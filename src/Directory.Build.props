@@ -2,7 +2,7 @@
     <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 
     <PropertyGroup>
-        <WarningsAsErrors>Nullable</WarningsAsErrors>
+        <WarningsAsErrors>$(WarningsAsErrors);Nullable</WarningsAsErrors>
         <EnableNETAnalyzers>true</EnableNETAnalyzers>
     </PropertyGroup>
 </Project>
