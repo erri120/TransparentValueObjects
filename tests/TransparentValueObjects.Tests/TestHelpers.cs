@@ -105,4 +105,9 @@ public static class TestHelpers
         sb.Replace("    ", "\t");
         return sb.ToString().Trim();
     }
+
+    public static void SourceNormalizeEquals(this string input, string expected)
+    {
+        input.SourceNormalize().Should().Be(expected.SourceNormalize());
+    }
 }

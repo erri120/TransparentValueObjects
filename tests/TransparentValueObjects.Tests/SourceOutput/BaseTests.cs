@@ -38,7 +38,7 @@ public TestValueObject()
 
         var cw = new CodeWriter();
         ValueObjectIncrementalSourceGenerator.AddConstructors(cw, "TestValueObject", "global::System.String", hasDefaultValue: false);
-        cw.ToString().SourceNormalize().Should().Be(expected);
+        cw.ToString().SourceNormalizeEquals(expected);
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public TestValueObject()
 
         var cw = new CodeWriter();
         ValueObjectIncrementalSourceGenerator.AddConstructors(cw, "TestValueObject", "global::System.String", hasDefaultValue: true);
-        cw.ToString().SourceNormalize().Should().Be(expected);
+        cw.ToString().SourceNormalizeEquals(expected);
     }
 
     [Fact]
@@ -89,7 +89,7 @@ public override string ToString() => Value.ToString();
 
         var cw = new CodeWriter();
         ValueObjectIncrementalSourceGenerator.OverrideBaseMethods(cw);
-        cw.ToString().SourceNormalize().Should().Be(expected);
+        cw.ToString().SourceNormalizeEquals(expected);
     }
 
     [Fact]
@@ -130,7 +130,7 @@ public override bool Equals(object? obj)
 
         var cw = new CodeWriter();
         ValueObjectIncrementalSourceGenerator.ImplementEqualsMethods(cw, "TestValueObject", "global::System.String", "?", hasDefaultEqualityComparer: false);
-        cw.ToString().SourceNormalize().Should().Be(expected);
+        cw.ToString().SourceNormalizeEquals(expected);
     }
 
     [Fact]
@@ -171,7 +171,7 @@ public override bool Equals(object? obj)
 
         var cw = new CodeWriter();
         ValueObjectIncrementalSourceGenerator.ImplementEqualsMethods(cw, "TestValueObject", "global::System.String", "?", hasDefaultEqualityComparer: true);
-        cw.ToString().SourceNormalize().Should().Be(expected);
+        cw.ToString().SourceNormalizeEquals(expected);
     }
 
     [Fact]
@@ -195,7 +195,7 @@ public static bool operator !=(global::System.String left, TestValueObject right
 
         var cw = new CodeWriter();
         ValueObjectIncrementalSourceGenerator.AddEqualityOperators(cw, "TestValueObject", "global::System.String");
-        cw.ToString().SourceNormalize().Should().Be(expected);
+        cw.ToString().SourceNormalizeEquals(expected);
     }
 
     [Fact]
@@ -213,6 +213,6 @@ public static explicit operator global::System.String(TestValueObject value) => 
 
         var cw = new CodeWriter();
         ValueObjectIncrementalSourceGenerator.AddExplicitCastOperators(cw, "TestValueObject", "global::System.String");
-        cw.ToString().SourceNormalize().Should().Be(expected);
+        cw.ToString().SourceNormalizeEquals(expected);
     }
 }
