@@ -4,4 +4,12 @@
         <ProjectReference Include="..\..\src\TransparentValueObjects\TransparentValueObjects.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <None Include="**/*.received.*" />
+        <Compile Remove="**/*.received.cs" />
+
+        <None Include="**/*.verified.*" />
+        <Compile Remove="**/*.verified.cs" />
+    </ItemGroup>
+
 </Project>

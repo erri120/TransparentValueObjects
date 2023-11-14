@@ -1,29 +1,47 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading.Tasks;
 using FluentAssertions;
 using JetBrains.Annotations;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using VerifyXunit;
 
 namespace TransparentValueObjects.Tests;
 
 public static class TestHelpers
 {
+    public static Task Verify(string target, [CallerFilePath] string sourceFile = "")
+    {
+        // ReSharper disable once ExplicitCallerInfoArgument
+        return Verifier.Verify(target, extension: "cs", sourceFile: sourceFile);
+    }
+
+    public static Task VerifyGenerator(string hintName, [LanguageInjection("csharp")] string input, [CallerFilePath] string sourceFile = "")
+    {
+        var res = RunGenerator(hintName, input);
+        // ReSharper disable once ExplicitCallerInfoArgument
+        return Verify(res, sourceFile: sourceFile);
+    }
+
     public static void TestPostInitializationOutput(string hintName, [LanguageInjection("csharp")] string expected)
     {
         TestGenerator(hintName, Array.Empty<SyntaxTree>(), expected);
     }
 
-    public static void TestGenerator(string hintName, [LanguageInjection("csharp")] string input, [LanguageInjection("csharp")] string expected)
+    public static Task VerifyPostInitializationOutput(string hintName, [CallerFilePath] string sourceFile = "")
     {
-        TestGenerator(hintName, new[] { CSharpSyntaxTree.ParseText(input) }, expected);
+        var res = RunGenerator(hintName, Array.Empty<SyntaxTree>());
+        // ReSharper disable once ExplicitCallerInfoArgument
+        return Verify(res, sourceFile: sourceFile);
     }
 
-    public static string RunGenerator(string hintName, [LanguageInjection("csharp")] string input)
+    private static string RunGenerator(string hintName, IEnumerable<SyntaxTree> syntaxTrees)
     {
-        var (driver, compilation) = SetupGenerator(new[] { CSharpSyntaxTree.ParseText(input) });
+        var (driver, compilation) = SetupGenerator(syntaxTrees);
 
         var runResult = driver.RunGenerators(compilation).GetRunResult();
         runResult.Results.Should().ContainSingle();
@@ -33,7 +51,19 @@ public static class TestHelpers
 
         result.GeneratedSources.Should().Contain(sourceResult => string.Equals(sourceResult.HintName, hintName, StringComparison.Ordinal));
         var res = result.GeneratedSources.First(sourceResult => string.Equals(sourceResult.HintName, hintName, StringComparison.Ordinal));
-        return res.SourceText.ToString().SourceNormalize();
+        return res.SourceText.ToString();
+    }
+
+    public static string RunGenerator(string hintName, [LanguageInjection("csharp")] string input)
+    {
+        return RunGenerator(hintName, new[] { CSharpSyntaxTree.ParseText(input) });
+    }
+
+    public static Task VerifyRegion(string source, string regionName, [CallerFilePath] string sourceFile = "")
+    {
+        var region = GetRegion(source, regionName);
+        // ReSharper disable once ExplicitCallerInfoArgument
+        return Verify(region, sourceFile: sourceFile);
     }
 
     public static string GetRegion(string source, string regionName)
@@ -104,10 +134,5 @@ public static class TestHelpers
         sb.Replace("\r\n", "\n");
         sb.Replace("    ", "\t");
         return sb.ToString().Trim();
-    }
-
-    public static void SourceNormalizeEquals(this string input, string expected)
-    {
-        input.SourceNormalize().Should().Be(expected.SourceNormalize());
     }
 }
