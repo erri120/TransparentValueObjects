@@ -21,7 +21,7 @@ namespace {{Constants.Namespace}}
     /// This only supports <c>System.Text.Json</c> at the moment.
     /// </remarks>
     {{Constants.CodeCoverageAttribute}}
-    public sealed class {{Name}} : {{IAugment.GlobalName}} { }
+    internal sealed class {{Name}} : {{IAugment.GlobalName}} { }
 }
 """;
     }

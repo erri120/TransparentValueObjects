@@ -33,7 +33,7 @@ public static class IAugmentWith
                     cw.AppendLine($"/// <typeparam name=\"T{j.ToString(CultureInfo.InvariantCulture)}\">The type of augment you want to apply to the value object.</typeparam>");
                 }
 
-                cw.Append($"public interface {Name}<");
+                cw.Append($"internal interface {Name}<");
                 for (var j = 0; j <= i; j++)
                 {
                     if (j != 0) cw.Append(",");

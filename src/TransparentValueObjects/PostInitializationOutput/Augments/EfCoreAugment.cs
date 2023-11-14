@@ -22,7 +22,7 @@ namespace {{Constants.Namespace}}
     /// This requires <c>Microsoft.EntityFrameworkCore</c>.
     /// </remarks>
     {{Constants.CodeCoverageAttribute}}
-    public sealed class {{Name}} : {{IAugment.GlobalName}} { }
+    internal sealed class {{Name}} : {{IAugment.GlobalName}} { }
 }
 """;
     }

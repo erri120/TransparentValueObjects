@@ -18,7 +18,7 @@ namespace {{Constants.Namespace}}
     /// Augment to enable support for a default equality comparer.
     /// </summary>
     {{Constants.CodeCoverageAttribute}}
-    public sealed class {{Name}} : {{IAugment.GlobalName}} { }
+    internal sealed class {{Name}} : {{IAugment.GlobalName}} { }
 }
 """;
     }

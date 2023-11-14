@@ -18,7 +18,7 @@ namespace {{Constants.Namespace}}
     /// Augment to enable support for a default value.
     /// </summary>
     {{Constants.CodeCoverageAttribute}}
-    public sealed class {{Name}} : {{IAugment.GlobalName}} { }
+    internal sealed class {{Name}} : {{IAugment.GlobalName}} { }
 }
 """;
     }

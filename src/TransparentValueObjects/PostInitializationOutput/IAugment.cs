@@ -18,7 +18,7 @@ namespace {{Constants.Namespace}}
     /// <summary>
     /// Marker interface for augments.
     /// </summary>
-    public interface {{Name}} { }
+    internal interface {{Name}} { }
 }
 """;
 }

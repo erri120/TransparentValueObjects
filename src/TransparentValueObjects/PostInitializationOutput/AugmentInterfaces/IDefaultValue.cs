@@ -21,7 +21,7 @@ namespace {{Constants.Namespace}}
     /// Represents the interface for <see cref="{{Augments.DefaultValueAugment.GlobalName}}"/>
     /// with members that the consumer has to implement to support the augment.
     /// </summary>
-    public interface {{Name}}<out TValueObject, TInnerValue>
+    internal interface {{Name}}<out TValueObject, TInnerValue>
         where TValueObject : {{IValueObject.GlobalName}}<TInnerValue>
         where TInnerValue : notnull
     {

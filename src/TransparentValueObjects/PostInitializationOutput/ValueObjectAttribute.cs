@@ -18,7 +18,7 @@ namespace {{Constants.Namespace}}
     /// <typeparam name="TInnerValue">The type of the inner value.</typeparam>
     {{Constants.CodeCoverageAttribute}}
     [global::System.AttributeUsage(global::System.AttributeTargets.Struct)]
-    public class {{Name}}<TInnerValue> : global::System.Attribute
+    internal class {{Name}}<TInnerValue> : global::System.Attribute
         where TInnerValue : notnull { }
 }
 """;

@@ -22,7 +22,7 @@ namespace {{Constants.Namespace}}
     /// This is the non-generic interface.
     /// </remarks>
     /// <seealso cref="{{Name}}{TInnerValue}"/>
-    public interface {{Name}}
+    internal interface {{Name}}
     {
         /// <summary>
         /// Gets the type of the inner value.
@@ -38,7 +38,7 @@ namespace {{Constants.Namespace}}
     /// </remarks>
     /// <seealso cref="{{Name}}"/>
     /// <typeparam name="TInnerValue">The type of the inner value.</typeparam>
-    public interface {{Name}}<TInnerValue> : {{Name}} where TInnerValue : notnull { }
+    internal interface {{Name}}<TInnerValue> : {{Name}} where TInnerValue : notnull { }
 }
 """;
 }
