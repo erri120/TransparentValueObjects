@@ -27,11 +27,6 @@ public static class TestHelpers
         return Verify(res, sourceFile: sourceFile);
     }
 
-    public static void TestPostInitializationOutput(string hintName, [LanguageInjection("csharp")] string expected)
-    {
-        TestGenerator(hintName, Array.Empty<SyntaxTree>(), expected);
-    }
-
     public static Task VerifyPostInitializationOutput(string hintName, [CallerFilePath] string sourceFile = "")
     {
         var res = RunGenerator(hintName, Array.Empty<SyntaxTree>());
@@ -66,7 +61,7 @@ public static class TestHelpers
         return Verify(region, sourceFile: sourceFile);
     }
 
-    public static string GetRegion(string source, string regionName)
+    private static string GetRegion(string source, string regionName)
     {
         var span = source.AsSpan();
         var startSearch = $"#region {regionName}";
@@ -81,7 +76,7 @@ public static class TestHelpers
         endIndex.Should().BeGreaterThanOrEqualTo(0);
 
         span = span[..(endIndex + endSearch.Length)];
-        return span.ToString().SourceNormalize();
+        return span.ToString();
     }
 
     public static Diagnostic[] GetDiagnostics([LanguageInjection("csharp")] string input)
@@ -90,27 +85,6 @@ public static class TestHelpers
 
         var runResult = driver.RunGenerators(compilation).GetRunResult();
         return runResult.Diagnostics.ToArray();
-    }
-
-    private static void TestGenerator(string hintName, IEnumerable<SyntaxTree> syntaxTrees, [LanguageInjection("csharp")] string expected)
-    {
-        var (driver, compilation) = SetupGenerator(syntaxTrees);
-
-        var runResult = driver.RunGenerators(compilation).GetRunResult();
-        runResult.Results.Should().ContainSingle();
-
-        var result = runResult.Results[0];
-        result.Exception.Should().BeNull();
-
-        result.GeneratedSources
-            .Should()
-            .Contain(sourceResult => string.Equals(sourceResult.HintName, hintName, StringComparison.Ordinal))
-            .Which
-            .SourceText
-            .ToString()
-            .SourceNormalize()
-            .Should()
-            .Be(expected.SourceNormalize());
     }
 
     private static (CSharpGeneratorDriver driver, CSharpCompilation compilation) SetupGenerator(IEnumerable<SyntaxTree> syntaxTrees)
