@@ -17,7 +17,7 @@ namespace TestNamespace;
 public partial struct MyValueObject { }
 """;
 
-        var diagnostics = TestHelpers.GetDiagnostics(input);
+        var diagnostics = TestHelpers.GetDiagnostics(input.SourceNormalize());
         diagnostics.Should().ContainSingle();
 
         var diagnostic = diagnostics[0];

@@ -2,7 +2,7 @@ using FluentAssertions;
 using Microsoft.CodeAnalysis;
 using Xunit;
 
-namespace TransparentValueObjects.Tests.SourceOutput.Augments;
+namespace TransparentValueObjects.Tests.Diagnostics;
 
 public class DuplicateAugments
 {
@@ -20,7 +20,7 @@ namespace TestNamespace;
 public readonly partial struct TestValueObject : IAugmentWith<DefaultValueAugment, DefaultValueAugment> { }
 """;
 
-        var diagnostics = TestHelpers.GetDiagnostics(input);
+        var diagnostics = TestHelpers.GetDiagnostics(input.SourceNormalize());
         diagnostics.Should().ContainSingle();
 
         var diagnostic = diagnostics[0];
