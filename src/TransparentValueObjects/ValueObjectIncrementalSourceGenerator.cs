@@ -60,7 +60,13 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
         var (targetTypeSymbol, innerValueTypeSymbol) = target;
         if (!targetTypeSymbol.IsReadOnly)
         {
-            context.ReportDiagnostic(Diagnostic.Create(Diagnostics.MissingReadOnlyModified, targetTypeSymbol.Locations.First(), targetTypeSymbol.Locations.Skip(1), targetTypeSymbol.Name));
+            context.ReportDiagnostic(Diagnostic.Create(
+                Diagnostics.MissingReadOnlyModified,
+                targetTypeSymbol.Locations.First(),
+                targetTypeSymbol.Locations.Skip(1),
+                targetTypeSymbol.Name)
+            );
+
             return;
         }
 
@@ -75,7 +81,7 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
         var innerValueTypeNullableAnnotation = innerValueTypeSymbol.IsReferenceType ? "?" : "";
 
         // get augments
-        var augmentNames = GetAugments(targetTypeSymbol);
+        var augmentNames = GetAugments(context, targetTypeSymbol);
         var hasDefaultValueAugment = augmentNames.Contains(Augments.DefaultValueAugment.GlobalName);
         var hasDefaultEqualityComparerAugment = augmentNames.Contains(Augments.DefaultEqualityComparerAugment.GlobalName);
         var hasJsonAugment = augmentNames.Contains(Augments.JsonAugment.GlobalName);
@@ -170,7 +176,7 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
         context.AddSource($"{targetTypeSimpleName}.g.cs", cw.ToString());
     }
 
-    private static HashSet<string> GetAugments(ITypeSymbol targetTypeSymbol)
+    private static HashSet<string> GetAugments(SourceProductionContext context, ITypeSymbol targetTypeSymbol)
     {
         var augments = new HashSet<string>(StringComparer.Ordinal);
 
@@ -185,9 +191,17 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
             {
                 if (typeArgument is not INamedTypeSymbol typeArgumentSymbol) continue;
                 var augmentName = typeArgumentSymbol.ToDisplayString(CustomSymbolDisplayFormats.GlobalFormat);
+
                 if (augments.Contains(augmentName))
                 {
-                    // TODO: emit warning diagnostic for duplicate augment
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        Diagnostics.DuplicateAugment,
+                        targetTypeSymbol.Locations.First(),
+                        targetTypeSymbol.Locations.Skip(1),
+                        targetTypeSymbol.Name,
+                        typeArgumentSymbol.Name)
+                    );
+
                     continue;
                 }
 

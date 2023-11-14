@@ -21,8 +21,9 @@ public partial struct MyValueObject { }
         diagnostics.Should().ContainSingle();
 
         var diagnostic = diagnostics[0];
-        diagnostic.Id.Should().Be("TV0001");
+        diagnostic.Id.Should().Be("ERRI_TVO_0001");
         diagnostic.Severity.Should().Be(DiagnosticSeverity.Warning);
         diagnostic.GetMessage().Should().Be("The Value Object 'MyValueObject' should be marked as readonly");
+        diagnostic.Location.ToString().Should().Be("SourceFile([99..112))");
     }
 }

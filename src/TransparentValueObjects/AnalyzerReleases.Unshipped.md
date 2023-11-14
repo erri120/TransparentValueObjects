@@ -1,5 +1,4 @@
 ### New Rules
 
-| Rule ID | Category | Severity | Notes       |
-|---------|----------|----------|-------------|
-| TV0001  | Usage    | Warning  | Diagnostics |
+ERRI_TVO_0001 | Usage | Warning | Diagnostics
+ERRI_TVO_0002 | Usage | Warning | Diagnostics
