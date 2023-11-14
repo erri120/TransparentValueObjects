@@ -247,13 +247,13 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
             cw.AppendLine("/// The default constructor can be enabled by providing a default value");
             cw.AppendLine($"/// using the <see cref=\"{Augments.DefaultValueAugment.GlobalName}\"/> augment.");
             cw.AppendLine("/// </remarks>");
-            cw.AppendLine("/// <exception cref=\"InvalidOperationException\">Thrown when called.</exception>");
-            cw.AppendLine($"[global::System.Obsolete(\"{errorMessage}\", error: true)]");
+            cw.AppendLine("/// <exception cref=\"global::System.InvalidOperationException\">Thrown when called.</exception>");
+            cw.AppendLine($"[global::System.Obsolete($\"{errorMessage}\", error: true)]");
             cw.AppendLine($"public {targetTypeSimpleName}()");
 
             using (cw.AddBlock())
             {
-                cw.AppendLine($"throw new global::System.InvalidOperationException(\"{errorMessage}\");");
+                cw.AppendLine($"throw new global::System.InvalidOperationException($\"{errorMessage}\");");
             }
         }
     }

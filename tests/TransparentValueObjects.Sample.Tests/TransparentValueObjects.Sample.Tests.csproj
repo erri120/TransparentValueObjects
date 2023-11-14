@@ -2,6 +2,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\TransparentValueObjects.Sample\TransparentValueObjects.Sample.csproj" />
+        <ProjectReference Include="..\..\src\TransparentValueObjects\TransparentValueObjects.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
     </ItemGroup>
 
 </Project>

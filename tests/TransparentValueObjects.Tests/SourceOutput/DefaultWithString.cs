@@ -73,11 +73,11 @@ readonly partial struct TestValueObject :
 	/// The default constructor can be enabled by providing a default value
 	/// using the <see cref="global::TransparentValueObjects.DefaultValueAugment"/> augment.
 	/// </remarks>
-	/// <exception cref="InvalidOperationException">Thrown when called.</exception>
-	[global::System.Obsolete("Use TestValueObject.{nameof(From)} instead.", error: true)]
+	/// <exception cref="global::System.InvalidOperationException">Thrown when called.</exception>
+	[global::System.Obsolete($"Use TestValueObject.{nameof(From)} instead.", error: true)]
 	public TestValueObject()
 	{
-		throw new global::System.InvalidOperationException("Use TestValueObject.{nameof(From)} instead.");
+		throw new global::System.InvalidOperationException($"Use TestValueObject.{nameof(From)} instead.");
 	}
 
 #endregion Constructors
