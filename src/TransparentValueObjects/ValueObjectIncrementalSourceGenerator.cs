@@ -100,6 +100,34 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
         cw.AppendLine($"namespace {targetNamespace};");
         cw.AppendLine();
 
+        // containing symbols
+        var containingSymbolStack = new Stack<INamedTypeSymbol>();
+        var containingSymbol = targetTypeSymbol.ContainingSymbol;
+        while (containingSymbol is not INamespaceSymbol && containingSymbol is INamedTypeSymbol containingTypeSymbol)
+        {
+            containingSymbolStack.Push(containingTypeSymbol);
+            containingSymbol = containingSymbol.ContainingSymbol;
+        }
+
+        var codeBlockStackForContainingSymbols = new Stack<CodeWriter.CodeBlock>();
+        while (containingSymbolStack.Count != 0)
+        {
+            var containingTypeSymbol = containingSymbolStack.Pop();
+            switch (containingTypeSymbol.TypeKind)
+            {
+                case TypeKind.Class:
+                    cw.AppendLine($"partial class {containingTypeSymbol.Name}");
+                    break;
+                case TypeKind.Struct:
+                    cw.AppendLine($"partial struct {containingTypeSymbol.Name}");
+                    break;
+                default:
+                    throw new NotSupportedException($"Unknown kind: {containingTypeSymbol.TypeKind}");
+            }
+
+            codeBlockStackForContainingSymbols.Push(cw.AddBlock());
+        }
+
         // struct declaration
         cw.AppendLine("[global::System.Diagnostics.DebuggerDisplay(\"{Value}\")]");
         cw.AppendLine("[global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage(Justification = \"Auto-generated.\")]");
@@ -171,6 +199,11 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
             // augments
             if (hasJsonAugment) AddJsonConverter(cw, targetTypeSimpleName, innerValueTypeGlobalName, isReferenceType: innerValueTypeSymbol.IsReferenceType);
             if (hasEfCoreAugment) AddEfCoreConverterComparer(cw, targetTypeSimpleName, innerValueTypeGlobalName);
+        }
+
+        while (codeBlockStackForContainingSymbols.Count != 0)
+        {
+            codeBlockStackForContainingSymbols.Pop().Dispose();
         }
 
         context.AddSource($"{targetTypeSimpleName}.g.cs", cw.ToString());
