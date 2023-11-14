@@ -344,3 +344,7 @@ healthchecksdb
 
 # Rider specific file
 global.json
+
+# Verify
+*.received.*
+*.received/
