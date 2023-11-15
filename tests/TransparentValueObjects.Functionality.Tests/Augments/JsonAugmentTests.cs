@@ -3,19 +3,22 @@ using System.Text.Json;
 using FluentAssertions;
 using Xunit;
 
-namespace TransparentValueObjects.Sample.Tests.Augments;
+namespace TransparentValueObjects.Functionality.Tests.Augments;
 
-public class JsonAugmentTests
+public partial class JsonAugmentTests
 {
+    [ValueObject<Guid>]
+    private readonly partial struct MyGuidValueObject : IAugmentWith<JsonAugment> { }
+
     [Fact]
     public void Test_ReadWrite()
     {
-        var vo = SampleGuidValueObject.From(Guid.Parse("803dba68-87ca-4dec-b003-3792a228545e"));
+        var vo = MyGuidValueObject.From(Guid.Parse("803dba68-87ca-4dec-b003-3792a228545e"));
 
         var json = JsonSerializer.Serialize(vo);
         json.Should().Be("\"803dba68-87ca-4dec-b003-3792a228545e\"");
 
-        var res = JsonSerializer.Deserialize<SampleGuidValueObject>(json);
+        var res = JsonSerializer.Deserialize<MyGuidValueObject>(json);
         res.Should().Be(vo);
     }
 

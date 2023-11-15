@@ -3,18 +3,18 @@ using System.Reflection;
 using FluentAssertions;
 using Xunit;
 
-namespace TransparentValueObjects.Sample.Tests.Augments;
+namespace TransparentValueObjects.Functionality.Tests.Augments;
 
 public partial class DefaultValueAugmentTests
 {
     [ValueObject<Guid>]
-    public readonly partial struct ValueObjectWithDefaultValue : IAugmentWith<DefaultValueAugment>
+    private readonly partial struct ValueObjectWithDefaultValue : IAugmentWith<DefaultValueAugment>
     {
         public static ValueObjectWithDefaultValue DefaultValue { get; } = From(Guid.Parse("9566068b-a89e-4d1a-a404-b9292d100a23"));
     }
 
     [ValueObject<Guid>]
-    public readonly partial struct ValueObjectWithoutDefaultValue { }
+    private readonly partial struct ValueObjectWithoutDefaultValue { }
 
     [Fact]
     public void Test_DefaultValue()
