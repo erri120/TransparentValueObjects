@@ -27,6 +27,6 @@ public class MyClass
     [Fact]
     public Task TestGenerator()
     {
-        return TestHelpers.VerifyGenerator("TestValueObject.g.cs", Input);
+        return TestHelpers.VerifyGenerator("TestNamespace.Foo.Bar.Baz.MyClass.MyNestedClass.TestValueObject.g.cs", Input);
     }
 }

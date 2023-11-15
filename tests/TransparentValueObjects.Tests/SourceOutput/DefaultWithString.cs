@@ -21,6 +21,6 @@ public readonly partial struct TestValueObject { }
     [Fact]
     public Task TestGenerator()
     {
-        return TestHelpers.VerifyGenerator("TestValueObject.g.cs", Input);
+        return TestHelpers.VerifyGenerator("TestNamespace.TestValueObject.g.cs", Input);
     }
 }

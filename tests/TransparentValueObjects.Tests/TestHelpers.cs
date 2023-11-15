@@ -54,6 +54,19 @@ public static class TestHelpers
         return RunGenerator(hintName, new[] { CSharpSyntaxTree.ParseText(input) });
     }
 
+    public static GeneratorRunResult RunGenerator([LanguageInjection("csharp")] string input)
+    {
+        var (driver, compilation) = SetupGenerator(new[] { CSharpSyntaxTree.ParseText(input) });
+
+        var runResult = driver.RunGenerators(compilation).GetRunResult();
+        runResult.Results.Should().ContainSingle();
+
+        var result = runResult.Results[0];
+        result.Exception.Should().BeNull();
+
+        return result;
+    }
+
     public static Task VerifyRegion(string source, string regionName, [CallerFilePath] string sourceFile = "")
     {
         var region = GetRegion(source, regionName);

@@ -21,14 +21,14 @@ public readonly partial struct TestValueObject : IAugmentWith<DefaultEqualityCom
     [Fact]
     public Task Test_AugmentInterfaces()
     {
-        var output = TestHelpers.RunGenerator("TestValueObject.g.cs", Input);
+        var output = TestHelpers.RunGenerator("TestNamespace.TestValueObject.g.cs", Input);
         return TestHelpers.VerifyRegion(output, "Equals Methods");
     }
 
     [Fact]
     public Task Test_EqualsMethods()
     {
-        var output = TestHelpers.RunGenerator("TestValueObject.g.cs", Input);
+        var output = TestHelpers.RunGenerator("TestNamespace.TestValueObject.g.cs", Input);
         return TestHelpers.VerifyRegion(output, "Equals Methods");
     }
 }

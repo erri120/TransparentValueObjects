@@ -21,14 +21,14 @@ public readonly partial struct TestValueObject : IAugmentWith<JsonAugment> { }
     [Fact]
     public Task Test_AugmentAttributes()
     {
-        var output = TestHelpers.RunGenerator("TestValueObject.g.cs", Input);
+        var output = TestHelpers.RunGenerator("TestNamespace.TestValueObject.g.cs", Input);
         return TestHelpers.VerifyRegion(output, "Augment Attributes");
     }
 
     [Fact]
     public Task Test_JsonAugment()
     {
-        var output = TestHelpers.RunGenerator("TestValueObject.g.cs", Input);
+        var output = TestHelpers.RunGenerator("TestNamespace.TestValueObject.g.cs", Input);
         return TestHelpers.VerifyRegion(output, "JSON Augment");
     }
 }

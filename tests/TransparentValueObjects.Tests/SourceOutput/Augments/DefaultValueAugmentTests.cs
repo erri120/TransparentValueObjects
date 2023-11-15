@@ -21,14 +21,14 @@ public readonly partial struct TestValueObject : IAugmentWith<DefaultValueAugmen
     [Fact]
     public Task Test_AugmentInterfaces()
     {
-        var output = TestHelpers.RunGenerator("TestValueObject.g.cs", Input);
+        var output = TestHelpers.RunGenerator("TestNamespace.TestValueObject.g.cs", Input);
         return TestHelpers.VerifyRegion(output, "Augment Interfaces");
     }
 
     [Fact]
     public Task Test_Constructors()
     {
-        var output = TestHelpers.RunGenerator("TestValueObject.g.cs", Input);
+        var output = TestHelpers.RunGenerator("TestNamespace.TestValueObject.g.cs", Input);
         return TestHelpers.VerifyRegion(output, "Constructors");
     }
 }
