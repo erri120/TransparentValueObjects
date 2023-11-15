@@ -16,4 +16,10 @@ public static class CustomSymbolDisplayFormats
         typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
         kindOptions: SymbolDisplayKindOptions.None
     );
+
+    public static readonly SymbolDisplayFormat HintNameFormat = new(
+        globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Omitted,
+        typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
+        genericsOptions: SymbolDisplayGenericsOptions.None
+    );
 }

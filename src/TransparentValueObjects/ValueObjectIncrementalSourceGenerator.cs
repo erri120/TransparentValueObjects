@@ -115,6 +115,7 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
             var containingTypeSymbol = containingSymbolStack.Pop();
             switch (containingTypeSymbol.TypeKind)
             {
+                // TODO: use ToDisplayString
                 case TypeKind.Class:
                     cw.AppendLine($"partial class {containingTypeSymbol.Name}");
                     break;
@@ -206,7 +207,8 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
             codeBlockStackForContainingSymbols.Pop().Dispose();
         }
 
-        context.AddSource($"{targetTypeSimpleName}.g.cs", cw.ToString());
+        var hintName = targetTypeSymbol.ToDisplayString(CustomSymbolDisplayFormats.HintNameFormat);
+        context.AddSource($"{hintName}.g.cs", cw.ToString());
     }
 
     private static HashSet<string> GetAugments(SourceProductionContext context, ITypeSymbol targetTypeSymbol)
