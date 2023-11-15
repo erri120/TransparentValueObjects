@@ -20,6 +20,13 @@ readonly partial struct TestValueObject :
 
 #endregion Base Interfaces
 
+#region Forwarded Interfaces
+
+	,global::System.IComparable<TestValueObject>
+	,global::System.IComparable<global::System.String>
+
+#endregion Forwarded Interfaces
+
 #region Augment Interfaces
 
 #endregion Augment Interfaces
@@ -124,6 +131,34 @@ readonly partial struct TestValueObject :
 	public static explicit operator global::System.String(TestValueObject value) => value.Value;
 
 #endregion Explicit Cast Operators
+
+#region IComparable Implementation
+
+	/// <inheritdoc/>
+	public global::System.Int32 CompareTo(TestValueObject other) => Value.CompareTo(other.Value);
+	/// <inheritdoc/>
+	public global::System.Int32 CompareTo(global::System.String? other) => Value.CompareTo(other);
+
+#endregion IComparable Implementation
+
+#region Comparison Operators
+
+	public static bool operator <(TestValueObject left, TestValueObject right) => left.Value.CompareTo(right.Value) < 0;
+	public static bool operator >(TestValueObject left, TestValueObject right) => left.Value.CompareTo(right.Value) > 0;
+	public static bool operator <=(TestValueObject left, TestValueObject right) => left.Value.CompareTo(right.Value) <= 0;
+	public static bool operator >=(TestValueObject left, TestValueObject right) => left.Value.CompareTo(right.Value) >= 0;
+
+	public static bool operator <(global::System.String left, TestValueObject right) => left.CompareTo(right.Value) < 0;
+	public static bool operator >(global::System.String left, TestValueObject right) => left.CompareTo(right.Value) > 0;
+	public static bool operator <=(global::System.String left, TestValueObject right) => left.CompareTo(right.Value) <= 0;
+	public static bool operator >=(global::System.String left, TestValueObject right) => left.CompareTo(right.Value) >= 0;
+
+	public static bool operator <(TestValueObject left, global::System.String right) => left.Value.CompareTo(right) < 0;
+	public static bool operator >(TestValueObject left, global::System.String right) => left.Value.CompareTo(right) > 0;
+	public static bool operator <=(TestValueObject left, global::System.String right) => left.Value.CompareTo(right) <= 0;
+	public static bool operator >=(TestValueObject left, global::System.String right) => left.Value.CompareTo(right) >= 0;
+
+#endregion Comparison Operators
 
 }
 

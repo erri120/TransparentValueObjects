@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using VerifyXunit;
 using Xunit;
@@ -60,6 +61,30 @@ public class BaseTests
     {
         var cw = new CodeWriter();
         ValueObjectIncrementalSourceGenerator.AddExplicitCastOperators(cw, "TestValueObject", "global::System.String");
+        return TestHelpers.Verify(cw.ToString());
+    }
+
+    [Fact]
+    public Task Test_ImplementComparable()
+    {
+        var cw = new CodeWriter();
+        ValueObjectIncrementalSourceGenerator.ImplementComparable(cw, "TestValueObject", "global::System.Guid", "");
+        return TestHelpers.Verify(cw.ToString());
+    }
+
+    [Fact]
+    public Task Test_ImplementComparable_Nullable()
+    {
+        var cw = new CodeWriter();
+        ValueObjectIncrementalSourceGenerator.ImplementComparable(cw, "TestValueObject", "global::System.String", "?");
+        return TestHelpers.Verify(cw.ToString());
+    }
+
+    [Fact]
+    public Task Test_AddComparisonOperators()
+    {
+        var cw = new CodeWriter();
+        ValueObjectIncrementalSourceGenerator.AddComparisonOperators(cw, "TestValueObject", "global::System.String");
         return TestHelpers.Verify(cw.ToString());
     }
 

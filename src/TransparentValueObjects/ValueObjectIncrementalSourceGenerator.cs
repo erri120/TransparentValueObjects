@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis;
@@ -80,6 +81,10 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
         // the nullable annotation of the inner value type. e.g. "?" for reference types and an empty string for value types
         var innerValueTypeNullableAnnotation = innerValueTypeSymbol.IsReferenceType ? "?" : "";
 
+        // inner value type interfaces for interface forwarding
+        var innerValueTypeInterfaces = innerValueTypeSymbol.Interfaces;
+        var systemComparableInterfaceTypeSymbol = GetMatchingInterface(innerValueTypeInterfaces, "global::System.IComparable<T>");
+
         // get augments
         var augmentNames = GetAugments(context, targetTypeSymbol);
         var hasDefaultValueAugment = augmentNames.Contains(Augments.DefaultValueAugment.GlobalName);
@@ -136,6 +141,20 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
             cw.AppendLine($"\tglobal::System.IEquatable<{innerValueTypeGlobalName}>");
         }
 
+        using (cw.AddRegionBlock("Forwarded Interfaces"))
+        {
+            if (systemComparableInterfaceTypeSymbol is not null)
+            {
+                cw.AppendLine();
+                cw.Append($"\t,global::System.IComparable<{targetTypeSimpleName}>");
+
+                cw.AppendLine();
+                cw.Append($"\t,global::System.IComparable<{innerValueTypeGlobalName}>");
+            }
+
+            cw.AppendLine();
+        }
+
         using (cw.AddRegionBlock("Augment Interfaces"))
         {
             if (hasDefaultValueAugment)
@@ -184,6 +203,12 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
 
             AddEqualityOperators(cw, targetTypeSimpleName, innerValueTypeGlobalName);
             AddExplicitCastOperators(cw, targetTypeSimpleName, innerValueTypeGlobalName);
+
+            if (systemComparableInterfaceTypeSymbol is not null)
+            {
+                ImplementComparable(cw, targetTypeSimpleName, innerValueTypeGlobalName, innerValueTypeNullableAnnotation);
+                AddComparisonOperators(cw, targetTypeSimpleName, innerValueTypeGlobalName);
+            }
 
             // custom code
             if (string.Equals(innerValueTypeGlobalName, "global::System.Guid", StringComparison.Ordinal))
@@ -237,6 +262,23 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
         }
 
         return augments;
+    }
+
+    private static INamedTypeSymbol? GetMatchingInterface(
+        ImmutableArray<INamedTypeSymbol> interfaceTypeSymbols,
+        string targetInterfaceGlobalName)
+    {
+        // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
+        foreach (var interfaceTypeSymbol in interfaceTypeSymbols)
+        {
+            var globalName = interfaceTypeSymbol.ConstructedFrom.ToDisplayString(CustomSymbolDisplayFormats.GlobalFormat);
+            if (string.Equals(globalName, targetInterfaceGlobalName, StringComparison.Ordinal))
+            {
+                return interfaceTypeSymbol;
+            }
+        }
+
+        return null;
     }
 
     public static void AddConstructors(CodeWriter cw, string targetTypeSimpleName, string innerValueTypeGlobalName, bool hasDefaultValue)
@@ -379,6 +421,47 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
 
         cw.AppendLine($"public static explicit operator {targetTypeSimpleName}({innerValueTypeGlobalName} value) => From(value);");
         cw.AppendLine($"public static explicit operator {innerValueTypeGlobalName}({targetTypeSimpleName} value) => value.Value;");
+        cw.AppendLine();
+    }
+
+    public static void ImplementComparable(
+        CodeWriter cw,
+        string targetTypeSimpleName,
+        string innerValueTypeGlobalName,
+        string innerValueTypeNullableAnnotation)
+    {
+        using var _ = cw.AddRegionBlock("IComparable Implementation");
+
+        cw.AppendLine(Constants.InheritDocumentation);
+        cw.AppendLine($"public global::System.Int32 CompareTo({targetTypeSimpleName} other) => Value.CompareTo(other.Value);");
+
+        cw.AppendLine(Constants.InheritDocumentation);
+        cw.AppendLine($"public global::System.Int32 CompareTo({innerValueTypeGlobalName}{innerValueTypeNullableAnnotation} other) => Value.CompareTo(other);");
+    }
+
+    public static void AddComparisonOperators(
+        CodeWriter cw,
+        string targetTypeSimpleName,
+        string innerValueTypeGlobalName)
+    {
+        using var _ = cw.AddRegionBlock("Comparison Operators");
+
+        cw.AppendLine($"public static bool operator <({targetTypeSimpleName} left, {targetTypeSimpleName} right) => left.Value.CompareTo(right.Value) < 0;");
+        cw.AppendLine($"public static bool operator >({targetTypeSimpleName} left, {targetTypeSimpleName} right) => left.Value.CompareTo(right.Value) > 0;");
+        cw.AppendLine($"public static bool operator <=({targetTypeSimpleName} left, {targetTypeSimpleName} right) => left.Value.CompareTo(right.Value) <= 0;");
+        cw.AppendLine($"public static bool operator >=({targetTypeSimpleName} left, {targetTypeSimpleName} right) => left.Value.CompareTo(right.Value) >= 0;");
+        cw.AppendLine();
+
+        cw.AppendLine($"public static bool operator <({innerValueTypeGlobalName} left, {targetTypeSimpleName} right) => left.CompareTo(right.Value) < 0;");
+        cw.AppendLine($"public static bool operator >({innerValueTypeGlobalName} left, {targetTypeSimpleName} right) => left.CompareTo(right.Value) > 0;");
+        cw.AppendLine($"public static bool operator <=({innerValueTypeGlobalName} left, {targetTypeSimpleName} right) => left.CompareTo(right.Value) <= 0;");
+        cw.AppendLine($"public static bool operator >=({innerValueTypeGlobalName} left, {targetTypeSimpleName} right) => left.CompareTo(right.Value) >= 0;");
+        cw.AppendLine();
+
+        cw.AppendLine($"public static bool operator <({targetTypeSimpleName} left, {innerValueTypeGlobalName} right) => left.Value.CompareTo(right) < 0;");
+        cw.AppendLine($"public static bool operator >({targetTypeSimpleName} left, {innerValueTypeGlobalName} right) => left.Value.CompareTo(right) > 0;");
+        cw.AppendLine($"public static bool operator <=({targetTypeSimpleName} left, {innerValueTypeGlobalName} right) => left.Value.CompareTo(right) <= 0;");
+        cw.AppendLine($"public static bool operator >=({targetTypeSimpleName} left, {innerValueTypeGlobalName} right) => left.Value.CompareTo(right) >= 0;");
         cw.AppendLine();
     }
 
