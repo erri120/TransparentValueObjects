@@ -92,6 +92,22 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
         var hasJsonAugment = augmentNames.Contains(Augments.JsonAugment.GlobalName);
         var hasEfCoreAugment = augmentNames.Contains(Augments.EfCoreAugment.GlobalName);
 
+        // check augments
+        if (hasJsonAugment && innerValueTypeSymbol.IsReferenceType && !hasDefaultValueAugment)
+        {
+            // if the inner value type is a reference type, the JSON augment REQUIRES the default value augment
+            context.ReportDiagnostic(Diagnostic.Create(
+                Diagnostics.MissingRequiredAugment,
+                targetTypeSymbol.Locations.First(),
+                targetTypeSymbol.Locations.Skip(1),
+                targetTypeSymbol.Name,
+                Augments.DefaultValueAugment.Name,
+                Augments.JsonAugment.Name)
+            );
+
+            return;
+        }
+
         // TODO: emit error when EF Core augment is used but Microsoft.EntityFrameworkCore isn't referenced
 
         var cw = new CodeWriter();
@@ -504,7 +520,6 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
                 cw.AppendLine("var innerValueConverter = GetInnerValueConverter(options);");
                 cw.AppendLine($"var innerValue = innerValueConverter.Read(ref reader, typeof({innerValueTypeGlobalName}), options);");
 
-                // TODO: if the inner value type is a reference type, the JSON augment REQUIRES the default value augment
                 cw.AppendLine(isReferenceType
                     ? "return innerValue is null ? DefaultValue : From(innerValue);"
                     : "return From(innerValue);");

@@ -27,4 +27,15 @@ public static class Diagnostics
         description: null,
         helpLinkUri: null
     );
+
+    public static readonly DiagnosticDescriptor MissingRequiredAugment = new(
+        id: "ERRI_TVO_0003",
+        title: "Missing required Augment",
+        messageFormat: "The Value Object '{0}' is missing Augment '{1}' which is required by Augment '{2}'",
+        category: UsageCategory,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: null,
+        helpLinkUri: null
+    );
 }
