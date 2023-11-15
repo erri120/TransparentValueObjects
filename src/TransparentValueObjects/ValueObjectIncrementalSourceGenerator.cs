@@ -185,6 +185,10 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
             AddEqualityOperators(cw, targetTypeSimpleName, innerValueTypeGlobalName);
             AddExplicitCastOperators(cw, targetTypeSimpleName, innerValueTypeGlobalName);
 
+            // custom code
+            if (string.Equals(innerValueTypeGlobalName, "global::System.Guid", StringComparison.Ordinal))
+                AddGuidSpecificCode(cw, targetTypeSimpleName, innerValueTypeGlobalName);
+
             // augments
             if (hasJsonAugment) AddJsonConverter(cw, targetTypeSimpleName, innerValueTypeGlobalName, isReferenceType: innerValueTypeSymbol.IsReferenceType);
             if (hasEfCoreAugment) AddEfCoreConverterComparer(cw, targetTypeSimpleName, innerValueTypeGlobalName);
@@ -375,6 +379,14 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
 
         cw.AppendLine($"public static explicit operator {targetTypeSimpleName}({innerValueTypeGlobalName} value) => From(value);");
         cw.AppendLine($"public static explicit operator {innerValueTypeGlobalName}({targetTypeSimpleName} value) => value.Value;");
+        cw.AppendLine();
+    }
+
+    public static void AddGuidSpecificCode(CodeWriter cw, string targetTypeSimpleName, string innerValueTypeGlobalName)
+    {
+        using var _ = cw.AddRegionBlock("GUID Specific Code");
+
+        cw.AppendLine($"public static {targetTypeSimpleName} NewId() => From({innerValueTypeGlobalName}.NewGuid());");
         cw.AppendLine();
     }
 

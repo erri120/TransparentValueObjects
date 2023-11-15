@@ -62,4 +62,12 @@ public class BaseTests
         ValueObjectIncrementalSourceGenerator.AddExplicitCastOperators(cw, "TestValueObject", "global::System.String");
         return TestHelpers.Verify(cw.ToString());
     }
+
+    [Fact]
+    public Task Test_AddGuidSpecificCode()
+    {
+        var cw = new CodeWriter();
+        ValueObjectIncrementalSourceGenerator.AddGuidSpecificCode(cw, "TestValueObject", "global::System.Guid");
+        return TestHelpers.Verify(cw.ToString());
+    }
 }
