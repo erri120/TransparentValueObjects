@@ -113,19 +113,7 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
         while (containingSymbolStack.Count != 0)
         {
             var containingTypeSymbol = containingSymbolStack.Pop();
-            switch (containingTypeSymbol.TypeKind)
-            {
-                // TODO: use ToDisplayString
-                case TypeKind.Class:
-                    cw.AppendLine($"partial class {containingTypeSymbol.Name}");
-                    break;
-                case TypeKind.Struct:
-                    cw.AppendLine($"partial struct {containingTypeSymbol.Name}");
-                    break;
-                default:
-                    throw new NotSupportedException($"Unknown kind: {containingTypeSymbol.TypeKind}");
-            }
-
+            cw.AppendLine($"partial {containingTypeSymbol.ToDisplayString(CustomSymbolDisplayFormats.ContainingSymbolFormat)}");
             codeBlockStackForContainingSymbols.Push(cw.AddBlock());
         }
 

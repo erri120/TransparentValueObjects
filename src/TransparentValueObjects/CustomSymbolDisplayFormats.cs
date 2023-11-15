@@ -22,4 +22,10 @@ public static class CustomSymbolDisplayFormats
         typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
         genericsOptions: SymbolDisplayGenericsOptions.None
     );
+
+    public static readonly SymbolDisplayFormat ContainingSymbolFormat = new(
+        globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Omitted,
+        typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameOnly,
+        kindOptions: SymbolDisplayKindOptions.IncludeTypeKeyword
+    );
 }

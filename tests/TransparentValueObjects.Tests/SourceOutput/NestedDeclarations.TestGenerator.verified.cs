@@ -5,7 +5,7 @@ namespace TestNamespace.Foo.Bar.Baz;
 
 partial class MyClass
 {
-	partial class MyNestedClass
+	partial struct MyNestedStruct
 	{
 		[global::System.Diagnostics.DebuggerDisplay("{Value}")]
 		[global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage(Justification = "Auto-generated.")]

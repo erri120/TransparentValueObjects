@@ -16,7 +16,7 @@ namespace TestNamespace.Foo.Bar.Baz;
 
 public class MyClass
 {
-    public class MyNestedClass
+    public struct MyNestedStruct
     {
         [ValueObject<string>]
         public readonly partial struct TestValueObject { }
@@ -27,6 +27,6 @@ public class MyClass
     [Fact]
     public Task TestGenerator()
     {
-        return TestHelpers.VerifyGenerator("TestNamespace.Foo.Bar.Baz.MyClass.MyNestedClass.TestValueObject.g.cs", Input);
+        return TestHelpers.VerifyGenerator("TestNamespace.Foo.Bar.Baz.MyClass.MyNestedStruct.TestValueObject.g.cs", Input);
     }
 }
