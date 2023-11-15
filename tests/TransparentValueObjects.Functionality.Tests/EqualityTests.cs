@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using FluentAssertions;
 using Xunit;
 
@@ -13,6 +14,7 @@ public partial class EqualityTests
     private readonly partial struct MyStringValueObject { }
 
     [Fact]
+    [SuppressMessage("ReSharper", "SuspiciousTypeConversion.Global")]
     public void Test_Equality_ValueType()
     {
         var guid = Guid.NewGuid();
@@ -22,6 +24,8 @@ public partial class EqualityTests
 
         left.Equals(right).Should().BeTrue();
         left.Equals(guid).Should().BeTrue();
+        left.Equals((object)guid).Should().BeTrue();
+
         (left == right).Should().BeTrue();
         (left == guid).Should().BeTrue();
         (left != right).Should().BeFalse();
@@ -29,6 +33,7 @@ public partial class EqualityTests
 
         left.Equals(empty).Should().BeFalse();
         left.Equals(Guid.Empty).Should().BeFalse();
+
         (left == empty).Should().BeFalse();
         (left == Guid.Empty).Should().BeFalse();
         (left != empty).Should().BeTrue();
@@ -36,6 +41,8 @@ public partial class EqualityTests
     }
 
     [Fact]
+    [SuppressMessage("Usage", "MA0002:IEqualityComparer<string> or IComparer<string> is missing")]
+    [SuppressMessage("ReSharper", "SuspiciousTypeConversion.Global")]
     public void Test_Equality_ReferenceType()
     {
         const string s = "Hello World!";
@@ -45,6 +52,9 @@ public partial class EqualityTests
 
         left.Equals(right).Should().BeTrue();
         left.Equals(s).Should().BeTrue();
+        left.Equals(s, StringComparer.Ordinal).Should().BeTrue();
+        left.Equals((object?)s).Should().BeTrue();
+
         (left == right).Should().BeTrue();
         (left == s).Should().BeTrue();
         (left != right).Should().BeFalse();
@@ -52,6 +62,7 @@ public partial class EqualityTests
 
         left.Equals(empty).Should().BeFalse();
         left.Equals(string.Empty).Should().BeFalse();
+
         (left == empty).Should().BeFalse();
         (left == string.Empty).Should().BeFalse();
         (left != empty).Should().BeTrue();
