@@ -14,7 +14,7 @@ using TransparentValueObjects;
 
 namespace TestNamespace;
 
-[ValueObject<int>]
+[ValueObject<Guid>]
 public readonly partial struct TestValueObject : IAugmentWith<JsonAugment> { }
 """;
 

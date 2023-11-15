@@ -10,7 +10,7 @@ using TransparentValueObjects.PostInitializationOutput;
 namespace TransparentValueObjects;
 
 [Generator(LanguageNames.CSharp)]
-public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
+public partial class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext initContext)
     {
@@ -231,7 +231,7 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
                 AddGuidSpecificCode(cw, targetTypeSimpleName, innerValueTypeGlobalName);
 
             // augments
-            if (hasJsonAugment) AddJsonConverter(cw, targetTypeSimpleName, innerValueTypeGlobalName, isReferenceType: innerValueTypeSymbol.IsReferenceType);
+            if (hasJsonAugment) JsonAugmentWriter.AddJsonConverter(cw, targetTypeSimpleName, innerValueTypeGlobalName, isReferenceType: innerValueTypeSymbol.IsReferenceType);
             if (hasEfCoreAugment) AddEfCoreConverterComparer(cw, targetTypeSimpleName, innerValueTypeGlobalName);
         }
 
@@ -487,66 +487,6 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
 
         cw.AppendLine($"public static {targetTypeSimpleName} NewId() => From({innerValueTypeGlobalName}.NewGuid());");
         cw.AppendLine();
-    }
-
-    private static void AddJsonConverter(
-        CodeWriter cw,
-        string targetTypeSimpleName,
-        string innerValueTypeGlobalName,
-        bool isReferenceType)
-    {
-        using var _ = cw.AddRegionBlock("JSON Augment");
-
-        // TODO: System.Text.Json and Newtonsoft.Json support
-
-        cw.AppendLine("/// <summary>");
-        cw.AppendLine("/// Custom JSON converter for the Value Object.");
-        cw.AppendLine("/// </summary>");
-        cw.AppendLine($"public class JsonConverter : global::System.Text.Json.Serialization.JsonConverter<{targetTypeSimpleName}>");
-        using (cw.AddBlock())
-        {
-            cw.AppendLine($"private static global::System.Text.Json.Serialization.JsonConverter<{innerValueTypeGlobalName}> GetInnerValueConverter(global::System.Text.Json.JsonSerializerOptions options)");
-            using (cw.AddBlock())
-            {
-                cw.AppendLine($"var innerValueConverter = options.GetConverter(typeof({innerValueTypeGlobalName}));");
-                cw.AppendLine($"if (innerValueConverter is not global::System.Text.Json.Serialization.JsonConverter<{innerValueTypeGlobalName}> converter)");
-                cw.AppendLine($"\tthrow new global::System.Text.Json.JsonException($\"Unable to find converter for type {{typeof({innerValueTypeGlobalName})}}\");");
-                cw.AppendLine("return converter;");
-            }
-
-            cw.AppendLine($"public override {targetTypeSimpleName} Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type typeToConvert, global::System.Text.Json.JsonSerializerOptions options)");
-            using (cw.AddBlock())
-            {
-                cw.AppendLine("var innerValueConverter = GetInnerValueConverter(options);");
-                cw.AppendLine($"var innerValue = innerValueConverter.Read(ref reader, typeof({innerValueTypeGlobalName}), options);");
-
-                cw.AppendLine(isReferenceType
-                    ? "return innerValue is null ? DefaultValue : From(innerValue);"
-                    : "return From(innerValue);");
-            }
-
-            cw.AppendLine($"public override void Write(global::System.Text.Json.Utf8JsonWriter writer, {targetTypeSimpleName} value, global::System.Text.Json.JsonSerializerOptions options)");
-            using (cw.AddBlock())
-            {
-                cw.AppendLine("var innerValueConverter = GetInnerValueConverter(options);");
-                cw.AppendLine("innerValueConverter.Write(writer, value.Value, options);");
-            }
-
-            cw.AppendLine($"public override {targetTypeSimpleName} ReadAsPropertyName(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type typeToConvert, global::System.Text.Json.JsonSerializerOptions options)");
-            using (cw.AddBlock())
-            {
-                cw.AppendLine("var innerValueConverter = GetInnerValueConverter(options);");
-                cw.AppendLine($"var innerValue = innerValueConverter.ReadAsPropertyName(ref reader, typeof({innerValueTypeGlobalName}), options);");
-                cw.AppendLine("return From(innerValue);");
-            }
-
-            cw.AppendLine($"public override void WriteAsPropertyName(global::System.Text.Json.Utf8JsonWriter writer, {targetTypeSimpleName} value, global::System.Text.Json.JsonSerializerOptions options)");
-            using (cw.AddBlock())
-            {
-                cw.AppendLine("var innerValueConverter = GetInnerValueConverter(options);");
-                cw.AppendLine("innerValueConverter.WriteAsPropertyName(writer, value.Value, options);");
-            }
-        }
     }
 
     public static void AddEfCoreConverterComparer(
