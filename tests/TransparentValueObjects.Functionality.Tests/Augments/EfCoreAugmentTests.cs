@@ -12,6 +12,9 @@ public partial class EfCoreAugmentTests
     [ValueObject<string>]
     private readonly partial struct MyStringValueObject : IAugmentWith<EfCoreAugment> { }
 
+    /// <summary>
+    ///
+    /// </summary>
     [Fact]
     public void Test_ValueConverter_ValueType()
     {

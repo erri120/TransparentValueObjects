@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using FluentAssertions;
 using JetBrains.Annotations;
 using Xunit;
@@ -141,19 +140,6 @@ public partial class JsonAugmentTests
         {
             { vo, innerValue.ToString()! },
         }!, expectedAsString, vo, innerValue.ToString());
-    }
-
-    private class MyConverter : JsonConverter<MyInt16ValueObject>
-    {
-        public override MyInt16ValueObject Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Write(Utf8JsonWriter writer, MyInt16ValueObject value, JsonSerializerOptions options)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
 
