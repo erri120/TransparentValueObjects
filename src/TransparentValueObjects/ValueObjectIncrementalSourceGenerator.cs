@@ -213,7 +213,7 @@ public partial class ValueObjectIncrementalSourceGenerator : IIncrementalGenerat
 
             AddConstructors(cw, targetTypeSimpleName, innerValueTypeGlobalName, hasDefaultValueAugment);
 
-            OverrideBaseMethods(cw, hasDefaultEqualityComparerAugment);
+            OverrideBaseMethods(cw, innerValueTypeGlobalName, hasDefaultEqualityComparerAugment);
 
             ImplementEqualsMethods(cw, targetTypeSimpleName, innerValueTypeGlobalName, innerValueTypeNullableAnnotation, hasDefaultEqualityComparerAugment);
 
@@ -343,7 +343,7 @@ public partial class ValueObjectIncrementalSourceGenerator : IIncrementalGenerat
         }
     }
 
-    public static void OverrideBaseMethods(CodeWriter cw, bool hasDefaultEqualityComparer)
+    public static void OverrideBaseMethods(CodeWriter cw, string innerValueTypeGlobalName, bool hasDefaultEqualityComparer)
     {
         using var _ = cw.AddRegionBlock("Base Methods");
 
@@ -354,6 +354,8 @@ public partial class ValueObjectIncrementalSourceGenerator : IIncrementalGenerat
         if (hasDefaultEqualityComparer)
         {
             cw.AppendLine("public override int GetHashCode() => InnerValueDefaultEqualityComparer.GetHashCode(Value);");
+            cw.AppendLine();
+            cw.AppendLine($"public int GetHashCode(global::System.Collections.Generic.IEqualityComparer<{innerValueTypeGlobalName}> equalityComparer) => equalityComparer.GetHashCode(Value);");
         }
         else
         {

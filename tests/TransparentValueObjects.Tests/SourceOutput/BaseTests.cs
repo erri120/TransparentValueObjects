@@ -27,7 +27,7 @@ public class BaseTests
     public Task Test_OverrideBaseMethods()
     {
         var cw = new CodeWriter();
-        ValueObjectIncrementalSourceGenerator.OverrideBaseMethods(cw, hasDefaultEqualityComparer: false);
+        ValueObjectIncrementalSourceGenerator.OverrideBaseMethods(cw, "global::System.String", hasDefaultEqualityComparer: false);
         return TestHelpers.Verify(cw.ToString());
     }
 
@@ -35,7 +35,7 @@ public class BaseTests
     public Task Test_OverrideBaseMethods_WithDefaultEqualityComparer()
     {
         var cw = new CodeWriter();
-        ValueObjectIncrementalSourceGenerator.OverrideBaseMethods(cw, hasDefaultEqualityComparer: true);
+        ValueObjectIncrementalSourceGenerator.OverrideBaseMethods(cw, "global::System.String", hasDefaultEqualityComparer: true);
         return TestHelpers.Verify(cw.ToString());
     }
 
