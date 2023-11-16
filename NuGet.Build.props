@@ -24,10 +24,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.SourceLink.GitHub" />
-    </ItemGroup>
-
-    <ItemGroup>
         <None Include="$(MSBuildThisFileDirectory)README.md">
             <Pack>True</Pack>
             <PackagePath>/</PackagePath>
