@@ -188,3 +188,7 @@ public class EfCoreValueComparer : ValueComparer<SampleStringValueObject>
     public override int GetHashCode(SampleStringValueObject instance) => instance.GetHashCode();
 }
 ```
+
+## License
+
+See [LICENSE](./LICENSE) for details.
