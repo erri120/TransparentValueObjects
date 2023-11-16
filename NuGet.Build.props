@@ -8,6 +8,7 @@
         <Authors>erri120</Authors>
 
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
 
         <PackageProjectUrl>https://github.com/erri120/TransparentValueObjects</PackageProjectUrl>
         <RepositoryUrl>https://github.com/erri120/TransparentValueObjects.git</RepositoryUrl>
@@ -24,6 +25,13 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.SourceLink.GitHub" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="$(MSBuildThisFileDirectory)README.md">
+            <Pack>True</Pack>
+            <PackagePath>/</PackagePath>
+        </None>
     </ItemGroup>
 
 </Project>
