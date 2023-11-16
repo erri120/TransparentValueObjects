@@ -1,4 +1,3 @@
-using System;
 using System.Threading.Tasks;
 using VerifyXunit;
 using Xunit;
@@ -28,7 +27,15 @@ public class BaseTests
     public Task Test_OverrideBaseMethods()
     {
         var cw = new CodeWriter();
-        ValueObjectIncrementalSourceGenerator.OverrideBaseMethods(cw);
+        ValueObjectIncrementalSourceGenerator.OverrideBaseMethods(cw, hasDefaultEqualityComparer: false);
+        return TestHelpers.Verify(cw.ToString());
+    }
+
+    [Fact]
+    public Task Test_OverrideBaseMethods_WithDefaultEqualityComparer()
+    {
+        var cw = new CodeWriter();
+        ValueObjectIncrementalSourceGenerator.OverrideBaseMethods(cw, hasDefaultEqualityComparer: true);
         return TestHelpers.Verify(cw.ToString());
     }
 
