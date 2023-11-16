@@ -114,20 +114,28 @@ readonly partial struct TestValueObject :
 
 #region Equality Operators
 
+	/// <summary>Equality Operator</summary>
 	public static bool operator ==(TestValueObject left, TestValueObject right) => left.Equals(right);
+	/// <summary>Equality Operator</summary>
 	public static bool operator !=(TestValueObject left, TestValueObject right) => !left.Equals(right);
 
+	/// <summary>Equality Operator</summary>
 	public static bool operator ==(TestValueObject left, global::System.Guid right) => left.Equals(right);
+	/// <summary>Equality Operator</summary>
 	public static bool operator !=(TestValueObject left, global::System.Guid right) => !left.Equals(right);
 
+	/// <summary>Equality Operator</summary>
 	public static bool operator ==(global::System.Guid left, TestValueObject right) => right.Equals(left);
+	/// <summary>Equality Operator</summary>
 	public static bool operator !=(global::System.Guid left, TestValueObject right) => !right.Equals(left);
 
 #endregion Equality Operators
 
 #region Explicit Cast Operators
 
+	/// <summary>Explicit Casting Operator</summary>
 	public static explicit operator TestValueObject(global::System.Guid value) => From(value);
+	/// <summary>Explicit Casting Operator</summary>
 	public static explicit operator global::System.Guid(TestValueObject value) => value.Value;
 
 #endregion Explicit Cast Operators
@@ -143,19 +151,31 @@ readonly partial struct TestValueObject :
 
 #region Comparison Operators
 
+	/// <summary>Comparison Operator</summary>
 	public static bool operator <(TestValueObject left, TestValueObject right) => left.Value.CompareTo(right.Value) < 0;
+	/// <summary>Comparison Operator</summary>
 	public static bool operator >(TestValueObject left, TestValueObject right) => left.Value.CompareTo(right.Value) > 0;
+	/// <summary>Comparison Operator</summary>
 	public static bool operator <=(TestValueObject left, TestValueObject right) => left.Value.CompareTo(right.Value) <= 0;
+	/// <summary>Comparison Operator</summary>
 	public static bool operator >=(TestValueObject left, TestValueObject right) => left.Value.CompareTo(right.Value) >= 0;
 
+	/// <summary>Comparison Operator</summary>
 	public static bool operator <(global::System.Guid left, TestValueObject right) => left.CompareTo(right.Value) < 0;
+	/// <summary>Comparison Operator</summary>
 	public static bool operator >(global::System.Guid left, TestValueObject right) => left.CompareTo(right.Value) > 0;
+	/// <summary>Comparison Operator</summary>
 	public static bool operator <=(global::System.Guid left, TestValueObject right) => left.CompareTo(right.Value) <= 0;
+	/// <summary>Comparison Operator</summary>
 	public static bool operator >=(global::System.Guid left, TestValueObject right) => left.CompareTo(right.Value) >= 0;
 
+	/// <summary>Comparison Operator</summary>
 	public static bool operator <(TestValueObject left, global::System.Guid right) => left.Value.CompareTo(right) < 0;
+	/// <summary>Comparison Operator</summary>
 	public static bool operator >(TestValueObject left, global::System.Guid right) => left.Value.CompareTo(right) > 0;
+	/// <summary>Comparison Operator</summary>
 	public static bool operator <=(TestValueObject left, global::System.Guid right) => left.Value.CompareTo(right) <= 0;
+	/// <summary>Comparison Operator</summary>
 	public static bool operator >=(TestValueObject left, global::System.Guid right) => left.Value.CompareTo(right) >= 0;
 
 #endregion Comparison Operators
