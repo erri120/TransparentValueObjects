@@ -14,4 +14,8 @@ public static class Constants
 """;
 
     public const string InlineAttribute = /*lang=csharp*/"[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]";
+
+    public const string Bool = /*lang=csharp*/ "global::System.Boolean";
+    public const string Int = /*lang=csharp*/ "global::System.Int32";
+    public const string String = /*lang=csharp*/ "global::System.String";
 }

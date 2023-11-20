@@ -78,11 +78,11 @@ partial class MyClass
 
 			/// <inheritdoc/>
 			[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-			public override int GetHashCode() => Value.GetHashCode();
+			public override global::System.Int32 GetHashCode() => Value.GetHashCode();
 
 			/// <inheritdoc/>
 			[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-			public override string ToString() => Value.ToString();
+			public override global::System.String ToString() => Value.ToString();
 
 #endregion Base Methods
 
@@ -90,11 +90,11 @@ partial class MyClass
 
 			/// <inheritdoc/>
 			[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-			public bool Equals(TestValueObject other) => Equals(other.Value);
+			public global::System.Boolean Equals(TestValueObject other) => Equals(other.Value);
 
 			/// <inheritdoc/>
 			[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-			public bool Equals(global::System.String? other) => Value.Equals(other);
+			public global::System.Boolean Equals(global::System.String? other) => Value.Equals(other);
 
 			/// <summary>
 			/// Determines whether the specified value is equal to the current inner value using a custom equality comparer.
@@ -103,10 +103,10 @@ partial class MyClass
 			/// <param name="comparer">The comparer to use.</param>
 			/// <returns></returns>
 			[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-			public bool Equals(global::System.String other, global::System.Collections.Generic.IEqualityComparer<global::System.String> comparer) => comparer.Equals(Value, other);
+			public global::System.Boolean Equals(global::System.String other, global::System.Collections.Generic.IEqualityComparer<global::System.String> comparer) => comparer.Equals(Value, other);
 
 			/// <inheritdoc/>
-			public override bool Equals(object? obj)
+			public override global::System.Boolean Equals(object? obj)
 			{
 				if (obj is null) return false;
 				if (obj is TestValueObject value) return Equals(value);
@@ -119,19 +119,19 @@ partial class MyClass
 #region Equality Operators
 
 			/// <summary>Equality Operator</summary>
-			public static bool operator ==(TestValueObject left, TestValueObject right) => left.Equals(right);
+			public static global::System.Boolean operator ==(TestValueObject left, TestValueObject right) => left.Equals(right);
 			/// <summary>Equality Operator</summary>
-			public static bool operator !=(TestValueObject left, TestValueObject right) => !left.Equals(right);
+			public static global::System.Boolean operator !=(TestValueObject left, TestValueObject right) => !left.Equals(right);
 
 			/// <summary>Equality Operator</summary>
-			public static bool operator ==(TestValueObject left, global::System.String right) => left.Equals(right);
+			public static global::System.Boolean operator ==(TestValueObject left, global::System.String right) => left.Equals(right);
 			/// <summary>Equality Operator</summary>
-			public static bool operator !=(TestValueObject left, global::System.String right) => !left.Equals(right);
+			public static global::System.Boolean operator !=(TestValueObject left, global::System.String right) => !left.Equals(right);
 
 			/// <summary>Equality Operator</summary>
-			public static bool operator ==(global::System.String left, TestValueObject right) => right.Equals(left);
+			public static global::System.Boolean operator ==(global::System.String left, TestValueObject right) => right.Equals(left);
 			/// <summary>Equality Operator</summary>
-			public static bool operator !=(global::System.String left, TestValueObject right) => !right.Equals(left);
+			public static global::System.Boolean operator !=(global::System.String left, TestValueObject right) => !right.Equals(left);
 
 #endregion Equality Operators
 
@@ -156,31 +156,31 @@ partial class MyClass
 #region Comparison Operators
 
 			/// <summary>Comparison Operator</summary>
-			public static bool operator <(TestValueObject left, TestValueObject right) => left.Value.CompareTo(right.Value) < 0;
+			public static global::System.Boolean operator <(TestValueObject left, TestValueObject right) => left.Value.CompareTo(right.Value) < 0;
 			/// <summary>Comparison Operator</summary>
-			public static bool operator >(TestValueObject left, TestValueObject right) => left.Value.CompareTo(right.Value) > 0;
+			public static global::System.Boolean operator >(TestValueObject left, TestValueObject right) => left.Value.CompareTo(right.Value) > 0;
 			/// <summary>Comparison Operator</summary>
-			public static bool operator <=(TestValueObject left, TestValueObject right) => left.Value.CompareTo(right.Value) <= 0;
+			public static global::System.Boolean operator <=(TestValueObject left, TestValueObject right) => left.Value.CompareTo(right.Value) <= 0;
 			/// <summary>Comparison Operator</summary>
-			public static bool operator >=(TestValueObject left, TestValueObject right) => left.Value.CompareTo(right.Value) >= 0;
+			public static global::System.Boolean operator >=(TestValueObject left, TestValueObject right) => left.Value.CompareTo(right.Value) >= 0;
 
 			/// <summary>Comparison Operator</summary>
-			public static bool operator <(global::System.String left, TestValueObject right) => left.CompareTo(right.Value) < 0;
+			public static global::System.Boolean operator <(global::System.String left, TestValueObject right) => left.CompareTo(right.Value) < 0;
 			/// <summary>Comparison Operator</summary>
-			public static bool operator >(global::System.String left, TestValueObject right) => left.CompareTo(right.Value) > 0;
+			public static global::System.Boolean operator >(global::System.String left, TestValueObject right) => left.CompareTo(right.Value) > 0;
 			/// <summary>Comparison Operator</summary>
-			public static bool operator <=(global::System.String left, TestValueObject right) => left.CompareTo(right.Value) <= 0;
+			public static global::System.Boolean operator <=(global::System.String left, TestValueObject right) => left.CompareTo(right.Value) <= 0;
 			/// <summary>Comparison Operator</summary>
-			public static bool operator >=(global::System.String left, TestValueObject right) => left.CompareTo(right.Value) >= 0;
+			public static global::System.Boolean operator >=(global::System.String left, TestValueObject right) => left.CompareTo(right.Value) >= 0;
 
 			/// <summary>Comparison Operator</summary>
-			public static bool operator <(TestValueObject left, global::System.String right) => left.Value.CompareTo(right) < 0;
+			public static global::System.Boolean operator <(TestValueObject left, global::System.String right) => left.Value.CompareTo(right) < 0;
 			/// <summary>Comparison Operator</summary>
-			public static bool operator >(TestValueObject left, global::System.String right) => left.Value.CompareTo(right) > 0;
+			public static global::System.Boolean operator >(TestValueObject left, global::System.String right) => left.Value.CompareTo(right) > 0;
 			/// <summary>Comparison Operator</summary>
-			public static bool operator <=(TestValueObject left, global::System.String right) => left.Value.CompareTo(right) <= 0;
+			public static global::System.Boolean operator <=(TestValueObject left, global::System.String right) => left.Value.CompareTo(right) <= 0;
 			/// <summary>Comparison Operator</summary>
-			public static bool operator >=(TestValueObject left, global::System.String right) => left.Value.CompareTo(right) >= 0;
+			public static global::System.Boolean operator >=(TestValueObject left, global::System.String right) => left.Value.CompareTo(right) >= 0;
 
 #endregion Comparison Operators
 

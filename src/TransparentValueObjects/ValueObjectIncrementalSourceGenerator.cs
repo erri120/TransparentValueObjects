@@ -369,13 +369,13 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
 
         if (hasDefaultEqualityComparer)
         {
-            cw.AppendLine("public override int GetHashCode() => InnerValueDefaultEqualityComparer.GetHashCode(Value);");
+            cw.AppendLine($"public override {Constants.Int} GetHashCode() => InnerValueDefaultEqualityComparer.GetHashCode(Value);");
             cw.AppendLine();
-            cw.AppendLine($"public int GetHashCode(global::System.Collections.Generic.IEqualityComparer<{innerValueTypeGlobalName}> equalityComparer) => equalityComparer.GetHashCode(Value);");
+            cw.AppendLine($"public {Constants.Int} GetHashCode(global::System.Collections.Generic.IEqualityComparer<{innerValueTypeGlobalName}> equalityComparer) => equalityComparer.GetHashCode(Value);");
         }
         else
         {
-            cw.AppendLine("public override int GetHashCode() => Value.GetHashCode();");
+            cw.AppendLine($"public override {Constants.Int} GetHashCode() => Value.GetHashCode();");
         }
 
         cw.AppendLine();
@@ -383,7 +383,7 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
         // ToString
         cw.AppendLine(Constants.InheritDocumentation);
         cw.AppendLine(Constants.InlineAttribute);
-        cw.AppendLine("public override string ToString() => Value.ToString();");
+        cw.AppendLine($"public override {Constants.String} ToString() => Value.ToString();");
         cw.AppendLine();
     }
 
@@ -399,7 +399,7 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
         // IEquality<TSelf>
         cw.AppendLine(Constants.InheritDocumentation);
         cw.AppendLine(Constants.InlineAttribute);
-        cw.AppendLine($"public bool Equals({targetTypeSimpleName} other) => Equals(other.Value);");
+        cw.AppendLine($"public {Constants.Bool} Equals({targetTypeSimpleName} other) => Equals(other.Value);");
         cw.AppendLine();
 
         // IEquality<TInnerValue>
@@ -407,13 +407,13 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
         {
             cw.AppendLine(Constants.InheritDocumentation);
             cw.AppendLine(Constants.InlineAttribute);
-            cw.AppendLine($"public bool Equals({innerValueTypeGlobalName}{innerValueTypeNullableAnnotation} other) => InnerValueDefaultEqualityComparer.Equals(Value, other);");
+            cw.AppendLine($"public {Constants.Bool} Equals({innerValueTypeGlobalName}{innerValueTypeNullableAnnotation} other) => InnerValueDefaultEqualityComparer.Equals(Value, other);");
         }
         else
         {
             cw.AppendLine(Constants.InheritDocumentation);
             cw.AppendLine(Constants.InlineAttribute);
-            cw.AppendLine($"public bool Equals({innerValueTypeGlobalName}{innerValueTypeNullableAnnotation} other) => Value.Equals(other);");
+            cw.AppendLine($"public {Constants.Bool} Equals({innerValueTypeGlobalName}{innerValueTypeNullableAnnotation} other) => Value.Equals(other);");
         }
 
         cw.AppendLine();
@@ -426,12 +426,12 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
         cw.AppendLine("/// <param name=\"comparer\">The comparer to use.</param>");
         cw.AppendLine("/// <returns></returns>");
         cw.AppendLine(Constants.InlineAttribute);
-        cw.AppendLine($"public bool Equals({innerValueTypeGlobalName} other, global::System.Collections.Generic.IEqualityComparer<{innerValueTypeGlobalName}> comparer) => comparer.Equals(Value, other);");
+        cw.AppendLine($"public {Constants.Bool} Equals({innerValueTypeGlobalName} other, global::System.Collections.Generic.IEqualityComparer<{innerValueTypeGlobalName}> comparer) => comparer.Equals(Value, other);");
         cw.AppendLine();
 
         // object.Equals
         cw.AppendLine(Constants.InheritDocumentation);
-        cw.AppendLine("public override bool Equals(object? obj)");
+        cw.AppendLine($"public override {Constants.Bool} Equals(object? obj)");
         using (cw.AddBlock())
         {
             cw.AppendLine("if (obj is null) return false;");
@@ -446,21 +446,21 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
         using var _ = cw.AddRegionBlock("Equality Operators");
 
         cw.AppendLine("/// <summary>Equality Operator</summary>");
-        cw.AppendLine($"public static bool operator ==({targetTypeSimpleName} left, {targetTypeSimpleName} right) => left.Equals(right);");
+        cw.AppendLine($"public static {Constants.Bool} operator ==({targetTypeSimpleName} left, {targetTypeSimpleName} right) => left.Equals(right);");
         cw.AppendLine("/// <summary>Equality Operator</summary>");
-        cw.AppendLine($"public static bool operator !=({targetTypeSimpleName} left, {targetTypeSimpleName} right) => !left.Equals(right);");
+        cw.AppendLine($"public static {Constants.Bool} operator !=({targetTypeSimpleName} left, {targetTypeSimpleName} right) => !left.Equals(right);");
         cw.AppendLine();
 
         cw.AppendLine("/// <summary>Equality Operator</summary>");
-        cw.AppendLine($"public static bool operator ==({targetTypeSimpleName} left, {innerValueTypeGlobalName} right) => left.Equals(right);");
+        cw.AppendLine($"public static {Constants.Bool} operator ==({targetTypeSimpleName} left, {innerValueTypeGlobalName} right) => left.Equals(right);");
         cw.AppendLine("/// <summary>Equality Operator</summary>");
-        cw.AppendLine($"public static bool operator !=({targetTypeSimpleName} left, {innerValueTypeGlobalName} right) => !left.Equals(right);");
+        cw.AppendLine($"public static {Constants.Bool} operator !=({targetTypeSimpleName} left, {innerValueTypeGlobalName} right) => !left.Equals(right);");
         cw.AppendLine();
 
         cw.AppendLine("/// <summary>Equality Operator</summary>");
-        cw.AppendLine($"public static bool operator ==({innerValueTypeGlobalName} left, {targetTypeSimpleName} right) => right.Equals(left);");
+        cw.AppendLine($"public static {Constants.Bool} operator ==({innerValueTypeGlobalName} left, {targetTypeSimpleName} right) => right.Equals(left);");
         cw.AppendLine("/// <summary>Equality Operator</summary>");
-        cw.AppendLine($"public static bool operator !=({innerValueTypeGlobalName} left, {targetTypeSimpleName} right) => !right.Equals(left);");
+        cw.AppendLine($"public static {Constants.Bool} operator !=({innerValueTypeGlobalName} left, {targetTypeSimpleName} right) => !right.Equals(left);");
         cw.AppendLine();
     }
 
@@ -498,33 +498,33 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
         using var _ = cw.AddRegionBlock("Comparison Operators");
 
         cw.AppendLine("/// <summary>Comparison Operator</summary>");
-        cw.AppendLine($"public static bool operator <({targetTypeSimpleName} left, {targetTypeSimpleName} right) => left.Value.CompareTo(right.Value) < 0;");
+        cw.AppendLine($"public static {Constants.Bool} operator <({targetTypeSimpleName} left, {targetTypeSimpleName} right) => left.Value.CompareTo(right.Value) < 0;");
         cw.AppendLine("/// <summary>Comparison Operator</summary>");
-        cw.AppendLine($"public static bool operator >({targetTypeSimpleName} left, {targetTypeSimpleName} right) => left.Value.CompareTo(right.Value) > 0;");
+        cw.AppendLine($"public static {Constants.Bool} operator >({targetTypeSimpleName} left, {targetTypeSimpleName} right) => left.Value.CompareTo(right.Value) > 0;");
         cw.AppendLine("/// <summary>Comparison Operator</summary>");
-        cw.AppendLine($"public static bool operator <=({targetTypeSimpleName} left, {targetTypeSimpleName} right) => left.Value.CompareTo(right.Value) <= 0;");
+        cw.AppendLine($"public static {Constants.Bool} operator <=({targetTypeSimpleName} left, {targetTypeSimpleName} right) => left.Value.CompareTo(right.Value) <= 0;");
         cw.AppendLine("/// <summary>Comparison Operator</summary>");
-        cw.AppendLine($"public static bool operator >=({targetTypeSimpleName} left, {targetTypeSimpleName} right) => left.Value.CompareTo(right.Value) >= 0;");
+        cw.AppendLine($"public static {Constants.Bool} operator >=({targetTypeSimpleName} left, {targetTypeSimpleName} right) => left.Value.CompareTo(right.Value) >= 0;");
         cw.AppendLine();
 
         cw.AppendLine("/// <summary>Comparison Operator</summary>");
-        cw.AppendLine($"public static bool operator <({innerValueTypeGlobalName} left, {targetTypeSimpleName} right) => left.CompareTo(right.Value) < 0;");
+        cw.AppendLine($"public static {Constants.Bool} operator <({innerValueTypeGlobalName} left, {targetTypeSimpleName} right) => left.CompareTo(right.Value) < 0;");
         cw.AppendLine("/// <summary>Comparison Operator</summary>");
-        cw.AppendLine($"public static bool operator >({innerValueTypeGlobalName} left, {targetTypeSimpleName} right) => left.CompareTo(right.Value) > 0;");
+        cw.AppendLine($"public static {Constants.Bool} operator >({innerValueTypeGlobalName} left, {targetTypeSimpleName} right) => left.CompareTo(right.Value) > 0;");
         cw.AppendLine("/// <summary>Comparison Operator</summary>");
-        cw.AppendLine($"public static bool operator <=({innerValueTypeGlobalName} left, {targetTypeSimpleName} right) => left.CompareTo(right.Value) <= 0;");
+        cw.AppendLine($"public static {Constants.Bool} operator <=({innerValueTypeGlobalName} left, {targetTypeSimpleName} right) => left.CompareTo(right.Value) <= 0;");
         cw.AppendLine("/// <summary>Comparison Operator</summary>");
-        cw.AppendLine($"public static bool operator >=({innerValueTypeGlobalName} left, {targetTypeSimpleName} right) => left.CompareTo(right.Value) >= 0;");
+        cw.AppendLine($"public static {Constants.Bool} operator >=({innerValueTypeGlobalName} left, {targetTypeSimpleName} right) => left.CompareTo(right.Value) >= 0;");
         cw.AppendLine();
 
         cw.AppendLine("/// <summary>Comparison Operator</summary>");
-        cw.AppendLine($"public static bool operator <({targetTypeSimpleName} left, {innerValueTypeGlobalName} right) => left.Value.CompareTo(right) < 0;");
+        cw.AppendLine($"public static {Constants.Bool} operator <({targetTypeSimpleName} left, {innerValueTypeGlobalName} right) => left.Value.CompareTo(right) < 0;");
         cw.AppendLine("/// <summary>Comparison Operator</summary>");
-        cw.AppendLine($"public static bool operator >({targetTypeSimpleName} left, {innerValueTypeGlobalName} right) => left.Value.CompareTo(right) > 0;");
+        cw.AppendLine($"public static {Constants.Bool} operator >({targetTypeSimpleName} left, {innerValueTypeGlobalName} right) => left.Value.CompareTo(right) > 0;");
         cw.AppendLine("/// <summary>Comparison Operator</summary>");
-        cw.AppendLine($"public static bool operator <=({targetTypeSimpleName} left, {innerValueTypeGlobalName} right) => left.Value.CompareTo(right) <= 0;");
+        cw.AppendLine($"public static {Constants.Bool} operator <=({targetTypeSimpleName} left, {innerValueTypeGlobalName} right) => left.Value.CompareTo(right) <= 0;");
         cw.AppendLine("/// <summary>Comparison Operator</summary>");
-        cw.AppendLine($"public static bool operator >=({targetTypeSimpleName} left, {innerValueTypeGlobalName} right) => left.Value.CompareTo(right) >= 0;");
+        cw.AppendLine($"public static {Constants.Bool} operator >=({targetTypeSimpleName} left, {innerValueTypeGlobalName} right) => left.Value.CompareTo(right) >= 0;");
         cw.AppendLine();
     }
 
@@ -573,7 +573,7 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
             cw.AppendLine();
 
             cw.AppendLine(Constants.InheritDocumentation);
-            cw.AppendLine($"public override bool Equals({targetTypeSimpleName} left, {targetTypeSimpleName} right) => left.Equals(right);");
+            cw.AppendLine($"public override {Constants.Bool} Equals({targetTypeSimpleName} left, {targetTypeSimpleName} right) => left.Equals(right);");
             cw.AppendLine();
 
             cw.AppendLine(Constants.InheritDocumentation);
@@ -581,7 +581,7 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
             cw.AppendLine();
 
             cw.AppendLine(Constants.InheritDocumentation);
-            cw.AppendLine($"public override int GetHashCode({targetTypeSimpleName} instance) => instance.GetHashCode();");
+            cw.AppendLine($"public override {Constants.Int} GetHashCode({targetTypeSimpleName} instance) => instance.GetHashCode();");
             cw.AppendLine();
         }
     }

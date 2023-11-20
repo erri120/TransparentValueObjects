@@ -27,13 +27,13 @@ public class EfCoreValueComparer : global::Microsoft.EntityFrameworkCore.ChangeT
 	) { }
 
 	/// <inheritdoc/>
-	public override bool Equals(TestValueObject left, TestValueObject right) => left.Equals(right);
+	public override global::System.Boolean Equals(TestValueObject left, TestValueObject right) => left.Equals(right);
 
 	/// <inheritdoc/>
 	public override TestValueObject Snapshot(TestValueObject instance) => From(instance.Value);
 
 	/// <inheritdoc/>
-	public override int GetHashCode(TestValueObject instance) => instance.GetHashCode();
+	public override global::System.Int32 GetHashCode(TestValueObject instance) => instance.GetHashCode();
 
 }
 
