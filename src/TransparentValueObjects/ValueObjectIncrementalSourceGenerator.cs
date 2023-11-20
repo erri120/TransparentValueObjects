@@ -10,7 +10,7 @@ using TransparentValueObjects.PostInitializationOutput;
 namespace TransparentValueObjects;
 
 [Generator(LanguageNames.CSharp)]
-public partial class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
+public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext initContext)
     {
@@ -84,6 +84,9 @@ public partial class ValueObjectIncrementalSourceGenerator : IIncrementalGenerat
         // inner value type interfaces for interface forwarding
         var innerValueTypeInterfaces = innerValueTypeSymbol.Interfaces;
         var systemComparableInterfaceTypeSymbol = GetMatchingInterface(innerValueTypeInterfaces, "global::System.IComparable<T>");
+
+        // existing methods
+        var existingMethods = GetExistingMethods(targetTypeSymbol);
 
         // get augments
         var augmentNames = GetAugments(context, targetTypeSymbol);
@@ -242,6 +245,19 @@ public partial class ValueObjectIncrementalSourceGenerator : IIncrementalGenerat
 
         var hintName = targetTypeSymbol.ToDisplayString(CustomSymbolDisplayFormats.HintNameFormat);
         context.AddSource($"{hintName}.g.cs", cw.ToString());
+    }
+
+    private static ImmutableHashSet<string> GetExistingMethods(INamedTypeSymbol targetTypeSymbol)
+    {
+        var members = targetTypeSymbol.GetMembers();
+        var memberNames = members
+            .Where(member => member is IMethodSymbol)
+            .Cast<IMethodSymbol>()
+            .Where(method => method.MethodKind == MethodKind.Ordinary)
+            .Select(member => member.ToDisplayString(CustomSymbolDisplayFormats.MemberNameFormat))
+            .ToImmutableHashSet();
+
+        return memberNames;
     }
 
     private static HashSet<string> GetAugments(SourceProductionContext context, ITypeSymbol targetTypeSymbol)
