@@ -1,0 +1,37 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get version from input
+        id: tag_name
+        shell: pwsh
+        env:
+          INPUT_VERSION: ${{ github.ref_name }}
+        run: |
+          $current_version = $env:INPUT_VERSION.StartsWith('v') ? $env:INPUT_VERSION.Substring(1) : $env:INPUT_VERSION
+          echo "current_version=$current_version" >> $env:GITHUB_OUTPUT
+
+      - uses: actions/checkout@v3
+
+      - name: Print Debug Info
+        run: dotnet --info
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Pack
+        # https://learn.microsoft.com/en-us/dotnet/core/project-sdk/msbuild-props#packrelease
+        env:
+          DOTNET_CLI_ENABLE_PACK_RELEASE_FOR_SOLUTIONS: true
+        run: dotnet pack -c Release --no-restore -p:Version="${{ steps.tag_name.outputs.current_version }}" -p:RepositoryBranch=${{ github.ref_name }} -p:RepositoryCommit="${{ github.sha }}"
+
+      - name: Push to NuGet
+        run: dotnet nuget push **/*.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
