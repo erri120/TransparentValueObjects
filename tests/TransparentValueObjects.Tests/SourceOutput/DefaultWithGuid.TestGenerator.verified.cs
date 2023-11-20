@@ -102,7 +102,8 @@ readonly partial struct TestValueObject :
 	public global::System.Boolean Equals(global::System.Guid other, global::System.Collections.Generic.IEqualityComparer<global::System.Guid> comparer) => comparer.Equals(Value, other);
 
 	/// <inheritdoc/>
-	public override global::System.Boolean Equals(object? obj)
+	[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+	public override global::System.Boolean Equals(global::System.Object? obj)
 	{
 		if (obj is null) return false;
 		if (obj is TestValueObject value) return Equals(value);

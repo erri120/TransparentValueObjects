@@ -18,4 +18,5 @@ public static class Constants
     public const string Bool = /*lang=csharp*/ "global::System.Boolean";
     public const string Int = /*lang=csharp*/ "global::System.Int32";
     public const string String = /*lang=csharp*/ "global::System.String";
+    public const string Object = /*lang=csharp*/ "global::System.Object";
 }
