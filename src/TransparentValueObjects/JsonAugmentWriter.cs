@@ -113,6 +113,7 @@ public static class JsonAugmentWriter
         bool isReferenceType,
         BaseType baseType)
     {
+        cw.AppendLine("/// <inheritdoc />");
         cw.AppendLine($"public override {targetTypeSimpleName} Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type typeToConvert, global::System.Text.Json.JsonSerializerOptions options)");
         using var _ = cw.AddBlock();
 
@@ -147,6 +148,7 @@ public static class JsonAugmentWriter
         string targetTypeSimpleName,
         BaseType baseType)
     {
+        cw.AppendLine("/// <inheritdoc />");
         cw.AppendLine($"public override void Write(global::System.Text.Json.Utf8JsonWriter writer, {targetTypeSimpleName} value, global::System.Text.Json.JsonSerializerOptions options)");
         using var _ = cw.AddBlock();
 
@@ -177,6 +179,7 @@ public static class JsonAugmentWriter
         string innerValueTypeGlobalName,
         BaseType baseType)
     {
+        cw.AppendLine("/// <inheritdoc />");
         cw.AppendLine($"public override {targetTypeSimpleName} ReadAsPropertyName(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type typeToConvert, global::System.Text.Json.JsonSerializerOptions options)");
         using var _ = cw.AddBlock();
 
@@ -211,6 +214,7 @@ public static class JsonAugmentWriter
         string targetTypeSimpleName,
         BaseType baseType)
     {
+        cw.AppendLine("/// <inheritdoc />");
         cw.AppendLine($"public override void WriteAsPropertyName(global::System.Text.Json.Utf8JsonWriter writer, {targetTypeSimpleName} value, global::System.Text.Json.JsonSerializerOptions options)");
         using var _ = cw.AddBlock();
 
