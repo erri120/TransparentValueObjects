@@ -16,8 +16,7 @@ namespace {{Constants.Namespace}}
 {
     /// <summary>
     /// Augment to enable support for EF Core model configuration by generting a
-    /// <see cref="global::Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter{TModel,TProvider}"/>
-    /// and a <see cref="global::Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer{T}"/>.
+    /// ValueConverter and a ValueComparer.
     /// </summary>
     /// <remarks>
     /// This requires <c>Microsoft.EntityFrameworkCore</c>.
