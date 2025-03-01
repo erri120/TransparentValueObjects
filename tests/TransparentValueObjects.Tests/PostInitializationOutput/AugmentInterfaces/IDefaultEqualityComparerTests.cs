@@ -5,7 +5,6 @@ using Xunit;
 
 namespace TransparentValueObjects.Tests.PostInitializationOutput.AugmentInterfaces;
 
-[UsesVerify]
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public class IDefaultEqualityComparerTests
 {

@@ -4,7 +4,6 @@ using Xunit;
 
 namespace TransparentValueObjects.Tests.PostInitializationOutput;
 
-[UsesVerify]
 public class ValueObjectAttributeTests
 {
     [Fact]

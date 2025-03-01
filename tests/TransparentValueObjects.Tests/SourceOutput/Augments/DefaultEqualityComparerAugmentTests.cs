@@ -4,7 +4,6 @@ using Xunit;
 
 namespace TransparentValueObjects.Tests.SourceOutput.Augments;
 
-[UsesVerify]
 public class DefaultEqualityComparerAugmentTests
 {
     private const string Input = /*lang=csharp*/

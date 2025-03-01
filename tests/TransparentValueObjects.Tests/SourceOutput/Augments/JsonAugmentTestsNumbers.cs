@@ -4,7 +4,6 @@ using Xunit;
 
 namespace TransparentValueObjects.Tests.SourceOutput.Augments;
 
-[UsesVerify]
 public class JsonAugmentTestsNumbers
 {
     private static string GenerateCode(string typeName)

@@ -6,7 +6,6 @@ using Xunit;
 
 namespace TransparentValueObjects.Tests.SourceOutput;
 
-[UsesVerify]
 public class DefaultWithString
 {
     private const string Input = /*lang=csharp*/

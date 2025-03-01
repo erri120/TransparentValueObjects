@@ -4,7 +4,6 @@ using Xunit;
 
 namespace TransparentValueObjects.Tests.SourceOutput;
 
-[UsesVerify]
 public class NestedDeclarations
 {
     private const string Input = /*lang=csharp*/

@@ -4,7 +4,6 @@ using Xunit;
 
 namespace TransparentValueObjects.Tests.PostInitializationOutput.Augments;
 
-[UsesVerify]
 public class DefaultValueAugmentTests
 {
     [Fact]

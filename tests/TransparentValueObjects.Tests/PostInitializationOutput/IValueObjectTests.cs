@@ -5,7 +5,6 @@ using Xunit;
 
 namespace TransparentValueObjects.Tests.PostInitializationOutput;
 
-[UsesVerify]
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public class IValueObjectTests
 {
