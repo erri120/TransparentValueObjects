@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using TransparentValueObjects.PostInitializationOutput;
 
 namespace TransparentValueObjects;
 
@@ -14,27 +13,8 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext initContext)
     {
-        initContext.RegisterPostInitializationOutput(postInitContext =>
-        {
-            // Core
-            postInitContext.AddSource(ValueObjectAttribute.HintName, ValueObjectAttribute.SourceCode);
-            postInitContext.AddSource(IValueObject.HintName, IValueObject.SourceCode);
-            postInitContext.AddSource(IAugment.HintName, IAugment.SourceCode);
-            postInitContext.AddSource(IAugmentWith.HintName, IAugmentWith.Generate());
-
-            // Augments
-            postInitContext.AddSource(Augments.DefaultValueAugment.HintName, Augments.DefaultValueAugment.SourceCode);
-            postInitContext.AddSource(Augments.DefaultEqualityComparerAugment.HintName, Augments.DefaultEqualityComparerAugment.SourceCode);
-            postInitContext.AddSource(Augments.JsonAugment.HintName, Augments.JsonAugment.SourceCode);
-            postInitContext.AddSource(Augments.EfCoreAugment.HintName, Augments.EfCoreAugment.SourceCode);
-
-            // Augment interfaces
-            postInitContext.AddSource(AugmentInterfaces.IDefaultValue.HintName, AugmentInterfaces.IDefaultValue.SourceCode);
-            postInitContext.AddSource(AugmentInterfaces.IDefaultEqualityComparer.HintName, AugmentInterfaces.IDefaultEqualityComparer.SourceCode);
-        });
-
         var provider = initContext.SyntaxProvider.ForAttributeWithMetadataName(
-            fullyQualifiedMetadataName: $"{Constants.Namespace}.{ValueObjectAttribute.Name}`1",
+            fullyQualifiedMetadataName: $"{Constants.Namespace}.ValueObjectAttribute`1",
             predicate: static (syntaxNode, _) => syntaxNode is StructDeclarationSyntax,
             transform: Transform
         );
@@ -155,7 +135,7 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
         // interfaces
         using (cw.AddRegionBlock("Base Interfaces"))
         {
-            cw.AppendLine($"\t{IValueObject.GlobalName}<{innerValueTypeGlobalName}>,");
+            cw.AppendLine($"\tglobal::{Constants.Namespace}.IValueObject<{innerValueTypeGlobalName}>,");
             cw.AppendLine($"\tglobal::System.IEquatable<{targetTypeSimpleName}>,");
             cw.AppendLine($"\tglobal::System.IEquatable<{innerValueTypeGlobalName}>");
         }
@@ -179,13 +159,13 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
             if (hasDefaultValueAugment)
             {
                 cw.AppendLine();
-                cw.Append($"\t,{AugmentInterfaces.IDefaultValue.GlobalName}<{targetTypeSimpleName}, {innerValueTypeGlobalName}>");
+                cw.Append($"\t,global::{Constants.Namespace}.IDefaultValue<{targetTypeSimpleName}, {innerValueTypeGlobalName}>");
             }
 
             if (hasDefaultEqualityComparerAugment)
             {
                 cw.AppendLine();
-                cw.Append($"\t,{AugmentInterfaces.IDefaultEqualityComparer.GlobalName}<{targetTypeSimpleName}, {innerValueTypeGlobalName}>");
+                cw.Append($"\t,global::{Constants.Namespace}.IDefaultEqualityComparer<{targetTypeSimpleName}, {innerValueTypeGlobalName}>");
             }
 
             cw.AppendLine();
@@ -268,7 +248,7 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
         foreach (var interfaceTypeSymbol in interfaceTypeSymbols)
         {
             var globalName = interfaceTypeSymbol.ToDisplayString(CustomSymbolDisplayFormats.GlobalFormat);
-            if (!globalName.StartsWith($"{IAugmentWith.GlobalName}<", StringComparison.Ordinal)) continue;
+            if (!globalName.StartsWith($"global::{Constants.Namespace}.IAugmentWith<", StringComparison.Ordinal)) continue;
 
             var typeArguments = interfaceTypeSymbol.TypeArguments;
             foreach (var typeArgument in typeArguments)
@@ -276,20 +256,14 @@ public class ValueObjectIncrementalSourceGenerator : IIncrementalGenerator
                 if (typeArgument is not INamedTypeSymbol typeArgumentSymbol) continue;
                 var augmentName = typeArgumentSymbol.ToDisplayString(CustomSymbolDisplayFormats.GlobalFormat);
 
-                if (augments.Contains(augmentName))
-                {
-                    context.ReportDiagnostic(Diagnostic.Create(
-                        Diagnostics.DuplicateAugment,
-                        targetTypeSymbol.Locations.First(),
-                        targetTypeSymbol.Locations.Skip(1),
-                        targetTypeSymbol.Name,
-                        typeArgumentSymbol.Name)
-                    );
-
-                    continue;
-                }
-
-                augments.Add(augmentName);
+                if (augments.Add(augmentName)) continue;
+                context.ReportDiagnostic(Diagnostic.Create(
+                    descriptor: Diagnostics.DuplicateAugment,
+                    location: targetTypeSymbol.Locations.First(),
+                    additionalLocations: targetTypeSymbol.Locations.Skip(1),
+                    targetTypeSymbol.Name,
+                    typeArgumentSymbol.Name)
+                );
             }
         }
 

@@ -27,13 +27,6 @@ public static class TestHelpers
         return Verify(res, sourceFile: sourceFile);
     }
 
-    public static Task VerifyPostInitializationOutput(string hintName, [CallerFilePath] string sourceFile = "")
-    {
-        var res = RunGenerator(hintName, Array.Empty<SyntaxTree>());
-        // ReSharper disable once ExplicitCallerInfoArgument
-        return Verify(res, sourceFile: sourceFile);
-    }
-
     private static string RunGenerator(string hintName, IEnumerable<SyntaxTree> syntaxTrees)
     {
         var (driver, compilation) = SetupGenerator(syntaxTrees);
@@ -110,6 +103,7 @@ public static class TestHelpers
             new[]
             {
                 MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(IValueObject).Assembly.Location),
             });
 
         return (driver, compilation);

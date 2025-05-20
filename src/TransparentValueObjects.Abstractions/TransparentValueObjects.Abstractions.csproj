@@ -1,0 +1,9 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>net8;net9</TargetFrameworks>
+        <RootNamespace>TransparentValueObjects</RootNamespace>
+        <IsPackable>true</IsPackable>
+    </PropertyGroup>
+
+</Project>

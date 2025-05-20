@@ -15,6 +15,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\TransparentValueObjects.Abstractions\TransparentValueObjects.Abstractions.csproj" />
         <ProjectReference Include="..\TransparentValueObjects\TransparentValueObjects.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
     </ItemGroup>
 

@@ -31,6 +31,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransparentValueObjects.Tes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransparentValueObjects.Functionality.Tests", "tests\TransparentValueObjects.Functionality.Tests\TransparentValueObjects.Functionality.Tests.csproj", "{844F8541-7605-467D-A6DF-995C94EF37CB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransparentValueObjects.Abstractions", "src\TransparentValueObjects.Abstractions\TransparentValueObjects.Abstractions.csproj", "{DBA5A795-9E99-4A65-9D64-7CA1FCA9CADE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +43,7 @@ Global
 		{B0587ECB-BC82-4BE2-B1E3-632E0CB16354} = {D7366524-42DB-4204-807A-80E28FF3BE8E}
 		{2084CEAE-BACC-4FA4-9F76-D1A4098C9A5E} = {08302C8D-3533-4967-A69D-90A971618F90}
 		{844F8541-7605-467D-A6DF-995C94EF37CB} = {08302C8D-3533-4967-A69D-90A971618F90}
+		{DBA5A795-9E99-4A65-9D64-7CA1FCA9CADE} = {D7366524-42DB-4204-807A-80E28FF3BE8E}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{B333D4DF-0147-4162-B33A-821B1D16746D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -59,5 +62,9 @@ Global
 		{844F8541-7605-467D-A6DF-995C94EF37CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{844F8541-7605-467D-A6DF-995C94EF37CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{844F8541-7605-467D-A6DF-995C94EF37CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DBA5A795-9E99-4A65-9D64-7CA1FCA9CADE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DBA5A795-9E99-4A65-9D64-7CA1FCA9CADE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DBA5A795-9E99-4A65-9D64-7CA1FCA9CADE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DBA5A795-9E99-4A65-9D64-7CA1FCA9CADE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
